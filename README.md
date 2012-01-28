@@ -3,7 +3,7 @@ redis_similar_items
 
 Incremental, distributed item-based collaborative filtering. You feed in user -> item interactions and it spits out the "related items". 
 
-Nearest neighbor implementation in pure ruby. This is possible thanks to redis sorted sets. Fnord is not a draft!
+Nearest neighbor implementation in pure ruby *and* as a native extension. All is possible thanks to redis sorted sets. Fnord is not a draft!
 
 
 use cases
@@ -21,7 +21,7 @@ synopsis
 --------
 
 ```
-  class RecommendedItem < RedisSimilarItems::Model
+  class RecommendedItem < RedisSimilarItems::Base
 
     # we'll use a blah blah vector similarity function
     similarity_function :pearson
@@ -56,15 +56,16 @@ distributed similiarity matrix
 
 
 
-memory usage
-------------
+does it scale?
+--------------
 
-number of keys for all possible combinations would be O(0 + 1 + 2 + 3 ... + n), which would result in
-2000001 million pairs for 2 million products...
+the maximum number of keys for n items is O(0 + 1 + 2 + 3 ... + n), which would result in 2000001 million keys for 2 million products. however, we only calculate a fixed, limited number of neighbors per item, this makes memory usage deliciously 0(n)
 
-however, we compute e.g. a maximum number of 30 neighbors per product and each id is at most 50 chars long we can assume that no set should be bigger than 50 + (50 * 30) = 2250bytes for the ids + (50 * 32) = 1600bytes for the scores, so a total of 3850bytes + 25% redis overhead = 4812bytes per set. 
+if we compute the matrix e.g. with a maximum of 30 neighbors per product and assume no item_id is longer than 50 chars, then no set should be bigger than 50 + (50 * 30) = 2250bytes for the ids + (50 * 32) = 1600bytes for the scores, a total of 3850bytes + 25% redis overhead = 4812bytes per set. 
 
 this means a similarity matrix of 2 million items will - in the worst case - require 2000000 * 2 * 4812bytes = 18,3 gigabyte of memory.
+
+also, new items can be added to the matrix incrementally and we can run the computation on multiple machines as a map/reduce job.
 
 
 
@@ -72,7 +73,7 @@ this means a similarity matrix of 2 million items will - in the worst case - req
 individual recommendations
 --------------------------
 
-    max(item.rank in item = ( preference.items in preference = ( preferences where user=user ) ) )
+  max(item.rank in item = ( preference.items in preference = ( preferences where user=user ) ) )
 
 
 
