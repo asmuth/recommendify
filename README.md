@@ -20,30 +20,31 @@ etc.
 synopsis
 --------
 
-```
-  class RecommendedItem < RedisSimilarItems::Base
+```ruby
 
-    # we'll use a blah blah vector similarity function
-    distance_function :blah
+class RecommendedItem < RedisSimilarItems::Base
 
-  end
+  # we'll use a blah blah vector similarity function
+  distance_function :blah
 
-  # five actor/user_id->item pairs (e.g. view, sale)
-  interactions = {
-    "user1" => ["item54", "item38", "item47"],
-    "user2" => ["item65", "item54"]
-  }
+end
 
-  # add the user->item interactions with a weight of 1.0
-  RecommendedItem.add_interactions(interactions["user1"], 1.0)
-  RecommendedItem.add_interactions(interactions["user2"], 1.0)
+# five actor/user_id->item pairs (e.g. view, sale)
+interactions = {
+  "user1" => ["item54", "item38", "item47"],
+  "user2" => ["item65", "item54"]
+}
 
-  # calculate similar items for each item (distributed)
-  RecommendedItem.process!
+# add the user->item interactions with a weight of 1.0
+RecommendedItem.add_interactions(interactions["user1"], 1.0)
+RecommendedItem.add_interactions(interactions["user2"], 1.0)
 
-  # retrieve similar items to "item54"
-  RecommendedItem.for("item54") 
-    => [ <RecommendedItem item_id:"item65" similarity:0.23>, (...) ]
+# calculate similar items for each item (distributed)
+RecommendedItem.process!
+
+# retrieve similar items to "item54"
+RecommendedItem.for("item54") 
+  => [ <RecommendedItem item_id:"item65" similarity:0.23>, (...) ]
 
 ```
 
@@ -63,47 +64,47 @@ usage
 
 One thing recommendify *won't* do for you is grouping the interactions/preferences by actor/user_id.
 
-```
-  class RecommendedItem < Recommendify::Base
+```ruby
 
-    # use the blah blah vector similarity function
-    distance_function :blah
+class RecommendedItem < Recommendify::Base
 
-    # calculate a maximum of fifty neighbors per item
-    max_neighbors 50
+  # use the blah blah vector similarity function
+  distance_function :blah
 
-    # truncate user/actor rows to 200 items
-    max_coconcurrent 200
+  # calculate a maximum of fifty neighbors per item
+  max_neighbors 50
 
-  end
+  # truncate user/actor rows to 200 items
+  max_coconcurrent 200
 
-  # clear the coconcurrency matrix
-  RecommendedItem.reset_matrix!
+end
 
-  # add interactions to the coconcurrency matrix with a weight of 1.0
-  RecommendedItem.add_interactions(interactions, 1.0)
+# clear the coconcurrency matrix
+RecommendedItem.reset_matrix!
 
-  # calculate the coconcurrency matrix and the nearest neighbors (not distributed)
-  RecommendedItem.process!
+# add interactions to the coconcurrency matrix with a weight of 1.0
+RecommendedItem.add_interactions(interactions, 1.0)
 
-  # queue the tasks for the coconcurrency matrix calculation (distributed)
-  RecommendedItem.process_matrix_async!
+# calculate the coconcurrency matrix and the nearest neighbors (not distributed)
+RecommendedItem.process!
 
-  # queue the tasks for the nearest neighbors calculation (distributed)
-  RecommendedItem.process_neighbors_async!
+# queue the tasks for the coconcurrency matrix calculation (distributed)
+RecommendedItem.process_matrix_async!
 
-  # fetch a single task from the queue and process it
-  RecommendedItem.work!
-  
-  # retrieve similar items
-  recommended_items = RecommendedItem.for(item_id) 
+# queue the tasks for the nearest neighbors calculation (distributed)
+RecommendedItem.process_neighbors_async!
 
-  # get the similarity of a result
-  recommended_items.first.similarity
+# fetch a single task from the queue and process it
+RecommendedItem.work!
 
-  # get the item_id of a result
-  recommended_items.first.item_id
+# retrieve similar items
+recommended_items = RecommendedItem.for(item_id) 
 
+# get the similarity of a result
+recommended_items.first.similarity
+
+# get the item_id of a result
+recommended_items.first.item_id
 
 ```
 
