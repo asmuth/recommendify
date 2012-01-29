@@ -1,9 +1,9 @@
 recommendify
 ============
 
-Incremental and distributed item-based "Collaborative Filtering" with ruby and redis. In a nutshell: You feed in user->item interactions and it spits out similarity vectors between items ("related items"). 
+Incremental and distributed item-based "Collaborative Filtering" for binary ratings with ruby and redis. In a nutshell: You feed in user->item interactions and it spits out similarity vectors between items ("related items"). 
 
-Implementation in pure ruby *and* as a native extension. The coconcurrence/similarity calculation can be run as a distributed map/reduce. All is possible thanks to redis sorted sets. Fnord is not a draft!
+Fnord is not a draft!
 
 
 use cases
@@ -17,47 +17,59 @@ etc.
 
 
 
-synopsis
---------
+usage
+-----
 
 ```ruby
 
 class RecommendedItem < Recommendify::Base
 
-  # we'll use a blah blah vector similarity function
-  distance_function :blah
+  # calculate a maximum of fifty neighbors per item
+  max_neighbors 50
+
+  # truncate user/actor rows to 200 items
+  max_coconcurrent 200
 
 end
 
-# five actor/user_id->item pairs (e.g. view, sale)
-interactions = {
-  "user1" => ["item54", "item38", "item47"],
-  "user2" => ["item65", "item54"]
-}
+# clear the similarity matrix
+RecommendedItem.delete!
 
-# add the user->item interactions with a weight of 1.0
-RecommendedItem.add_interactions(interactions["user1"], 1.0)
-RecommendedItem.add_interactions(interactions["user2"], 1.0)
+# ...or degrade the similarity matrix by 0.5
+RecommendedItem.degrade!(0.5)
 
-# calculate similar items for each item (distributed)
-RecommendedItem.process!
+# create a new input/co-concurrence matrix
+m = RecommendedItem.create_matrix
+
+# add user->item interactions to the matrix
+m.add_vector("user1", "item54")
+m.add_vector("user1", "item38")
+m.add_vector("user1", "item47")
+m.add_vector("user2", "item65")
+m.add_vector("user2", "item54")
+
+# process the matrix (distributed)
+m.process!
+
+# apply the processed co-concurrence matrix to the similarity matrix with a score of 5
+m.apply!(5)
+
+# delete the co-concurrence matrix
+m.delete!
 
 # retrieve similar items to "item54"
 RecommendedItem.for("item54") 
   => [ <RecommendedItem item_id:"item65" similarity:0.23>, (...) ]
 
+# get the similarity of a result
+RecommendedItem.for("item54").similarity
+  => 0.23
+
+# get the item_id of a result
+RecommendedItem.for("item54").item_id
+  => "item65"
+
 ```
-
-
-similarity functions
---------------------
-
-+ `k_nearest_neighbor` K-nearest neighbor algorithm (not yet implemented)
-+ `cosine_distance` Cosine distance/similarity (not yet implemented)
-+ `cosine_frequency`  Cosine distance/similarity (not yet implemented)
-+ `pearson` Pearson correlation coefficient (not yet implemented)
-+ `pearson_native` Pearson correlation coefficient  / Native implementation (not yet implemented)
-+ `support_vector_machine` Support Vector Machine neighborhood (not yet implemented)
 
 
 does it scale?
@@ -68,56 +80,6 @@ The number of keys in the similarity matrix grows O(n^2) and and would result in
 The size of the computed nearest neighbors grows O(n). If we compute e.g. a maximum of 30 neighbors per item and assume no item_id is longer than 50 chars, then no set should be bigger than 50 + (50 * 30) = 2250bytes for the ids + (50 * 32) = 1600bytes for the scores, a total of 3850bytes + 25% redis overhead = 4812bytes per set. 
 
 This means 2 million items will - in the worst case - require 2000000 * 2 * 4812bytes = 18,3 gigabyte of memory.
-
-
-usage
------
-
-One thing recommendify *won't* do for you is grouping the interactions/preferences by actor/user_id.
-
-```ruby
-
-class RecommendedItem < Recommendify::Base
-
-  # use the blah blah vector similarity function
-  distance_function :blah
-
-  # calculate a maximum of fifty neighbors per item
-  max_neighbors 50
-
-  # truncate user/actor rows to 200 items
-  max_coconcurrent 200
-
-end
-
-# clear the coconcurrency matrix
-RecommendedItem.reset_matrix!
-
-# add interactions to the coconcurrency matrix with a weight of 1.0
-RecommendedItem.add_interactions(interactions, 1.0)
-
-# calculate the coconcurrency matrix and the nearest neighbors (not distributed)
-RecommendedItem.process!
-
-# queue the tasks for the coconcurrency matrix calculation (distributed)
-RecommendedItem.process_matrix_async!
-
-# queue the tasks for the nearest neighbors calculation (distributed)
-RecommendedItem.process_neighbors_async!
-
-# fetch a single task from the queue and process it
-RecommendedItem.work!
-
-# retrieve similar items
-recommended_items = RecommendedItem.for(item_id) 
-
-# get the similarity of a result
-recommended_items.first.similarity
-
-# get the item_id of a result
-recommended_items.first.item_id
-
-```
 
 
 ideas
@@ -138,7 +100,8 @@ Sources / References
 
 [4] Adomavicius G. and Tuzhilin A. (2005). Towards the Next Generation of Recommender Systems: A Survey of the State-of-the-Art and Possible Extensions (IEEE Transactions on knowledge and data engineering)
 
-[5] kNN Versus SVM in the Collaborative Filtering Framework
+[5] Grcar M, Fortuna B. and Mladenic D. (2005). kNN Versus SVM in the Collaborative Filtering Framework (Jozef Stefan Institut, IST Programme of the European Community)
+
 
 
 License
