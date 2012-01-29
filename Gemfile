@@ -1,5 +1,7 @@
 source :rubygems
 
+gem "redis"
+
 group :development do
   gem "rake"
   gem "rspec"

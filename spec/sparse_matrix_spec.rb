@@ -44,14 +44,14 @@ describe Recommendify::SparseMatrix do
 
   it "should increment a value" do
     @sm["foo", "bar"] = 1000
-    @sm.incr("foo", "bar").should == 1001
+    @sm.incr("foo", "bar")
     Recommendify.redis.hget("recommendify:mysparsematrix", "bar:foo").to_i.should == 1001
   end
 
   it "should increment a value regardless of parameter order" do
     @sm["foo", "bar"] = 2000
-    @sm.incr("bar", "foo").should == 2001
-    Recommendify.redis.hget("recommendify:mysparsematrix", "bar:foo").to_i.should == 1001
+    @sm.incr("bar", "foo")
+    Recommendify.redis.hget("recommendify:mysparsematrix", "bar:foo").to_i.should == 2001
   end
 
   it "should not create unneseccary keys" do
@@ -59,23 +59,23 @@ describe Recommendify::SparseMatrix do
     @sm["5asd6", "bar"] = 260
     @sm["foo", "bar"] = 45
     @sm["foo", "jefs"] = 26
-    Recommendify.redis.keys("recommendify:mysparsematrix").length.should == 4
+    Recommendify.redis.hkeys("recommendify:mysparsematrix").length.should == 3
   end
 
   it "should create a key if the value is not 0" do
     @sm["foo", "jefs"] = 26
-    Recommendify.redis.keys("recommendify:mysparsematrix").length.should == 1
+    Recommendify.redis.hkeys("recommendify:mysparsematrix").length.should == 1
   end
 
   it "should not create a key if the value is 0" do
     @sm["foo", "jefs"] = 0
-    Recommendify.redis.keys("recommendify:mysparsematrix").length.should == 0
+    Recommendify.redis.hkeys("recommendify:mysparsematrix").length.should == 0
   end
 
   it "should delete a key if the value is set to 0" do
     Recommendify.redis.hset("recommendify:mysparsematrix", "bar:foo", 43)
     @sm["bar", "foo"] = 0
-    Recommendify.redis.keys("recommendify:mysparsematrix").length.should == 0
+    Recommendify.redis.hkeys("recommendify:mysparsematrix").length.should == 0
   end
 
 end
