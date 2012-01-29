@@ -102,6 +102,7 @@ Sources / References
 
 [5] Grcar M, Fortuna B. and Mladenic D. (2005). kNN Versus SVM in the Collaborative Filtering Framework (Jozef Stefan Institut, IST Programme of the European Community)
 
+[6] Miranda C. and Alipio J. (2008). Incremental collaborative ﬁltering for binary ratings (LIAAD - INESC Porto, University of Porto)
 
 
 License
