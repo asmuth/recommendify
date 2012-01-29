@@ -9,7 +9,7 @@ describe Recommendify::SparseMatrix do
 
   before(:each) do
     Recommendify.redis.keys("recommendify*").each do |k|
-    Recommendify.redis.del(k)
+      Recommendify.redis.del(k)
     end
   end
   
