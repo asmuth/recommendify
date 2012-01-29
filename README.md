@@ -49,6 +49,18 @@ RecommendedItem.for("item54")
 ```
 
 
+
+similarity functions
+--------------------
+
++ `k_nearest_neighbor` K-nearest neighbor algorithm (not yet implemented)
++ `cosine_distance` Cosine distance/similarity (not yet implemented)
++ `cosine_frequency`  Cosine distance/similarity (not yet implemented)
++ `pearson` Pearson correlation coefficient (not yet implemented)
++ `pearson_native` Pearson correlation coefficient  / Native implementation (not yet implemented)
+
+
+
 does it scale?
 --------------
 
@@ -113,7 +125,6 @@ ideas
 -----
 
 + rake benchmark CLASS=MySimilarityProcessor
-+ NativeSimilarityProcessor (ruby_ext)
 
 
 
@@ -127,3 +138,15 @@ Sources / References
 [3] Schafer J.B, Konstan J. and Riedl J. (1999). Recommender Systems in E-Commerce (Proceedings of ACM E-Commerce 1999 conference)
 
 [4] Adomavicius G. and Tuzhilin A. (2005). Towards the Next Generation of Recommender Systems: A Survey of the State-of-the-Art and Possible Extensions (IEEE Transactions on knowledge and data engineering)
+
+
+License
+-------
+
+Copyright (c) 2011 Paul Asmuth
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to use, copy and modify copies of the Software, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
