@@ -1,4 +1,5 @@
 require "rspec"
+require "redis"
 require ::File.expand_path('../../lib/recommendify', __FILE__)
 
 class TestRecommender < Recommendify::SimilarityMatrix
