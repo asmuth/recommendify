@@ -1,8 +1,14 @@
+$: << ::File.expand_path("../lib", __FILE__)
+require "recommendify"
 
-class RecommendedProfiles < Recommendify::Base
+class UserRecommender < Recommendify::SimilarityMatrix
+
+  max_neighbors 50
+
+  processor :visits, 
+    :similarity_func => :jaccard
 end
 
-RecommendedProfiles.reset_matrix!
 
 buckets = Hash.new{ |h,k| h[k]=[] }
 
@@ -12,8 +18,9 @@ IO.read("/home/paul/talentsuche_visits.csv").split("\n").each do |l|
 end
 
 buckets.each do |user_id, items|
-  puts "#{user_id} -> #{items.join(",")}"
-  RecommendedProfiles.add_interactions(items)
+  next if user_id.length == 0
+  puts "#{user_id} -> #{items.join(",")}"  
+  UserRecommender.visits.add_set(user_id, items)
 end
 
-RecommededProfiles.process!
+UserRecommender.process!
