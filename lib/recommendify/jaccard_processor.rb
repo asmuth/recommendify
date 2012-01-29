@@ -1,17 +1,13 @@
-class Recommendify::JaccardProcessor
+class Recommendify::JaccardProcessor < Recommendify::Processor
 
   attr_reader :ccmatrix
 
   def initialize(opts={})
-    @opts = opts
+    super(opts)
     @ccmatrix = Recommendify::SparseMatrix.new(
       :redis_prefix => @opts.fetch(:redis_prefix),
       :key => [@opts.fetch(:key), :ccmatrix].join(":")
     )
-  end
-
-  def redis_key(append=nil)
-    [@opts.fetch(:redis_prefix), @opts.fetch(:key), append].flatten.compact.join(":")
   end
 
   def add_set(set_id, item_ids)
