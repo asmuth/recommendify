@@ -70,7 +70,7 @@ usage
 One thing recommendify *won't* do for you is grouping the interactions/preferences by actor/user_id.
 
 ```
-  class RecommendedItem < RedisSimilarItems::Base
+  class RecommendedItem < Recommendify::Base
 
     # us the pearson vector similarity function
     distance_function :pearson
