@@ -28,6 +28,16 @@ class Recommendify::JaccardProcessor
     calculate_jaccard_cached(item1, item2)
   end
 
+  def similarities_for(item1)
+    (all_items - [item1]).map do |item2|
+      [item2, similarity(item1, item2)]
+    end
+  end
+
+  def all_items
+    Recommendify.redis.hkeys(redis_key(:items))
+  end
+
 private
 
   def all_pairs(keys)

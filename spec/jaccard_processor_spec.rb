@@ -76,5 +76,54 @@ describe Recommendify::JaccardProcessor do
     @jaccard.similarity("blubb", "fnord").should == 0.4
   end
 
+  it "should calculate all similarities for an item (1/3)" do
+    @jaccard.add_set("user42", ["fnord", "blubb", "shmoo"])
+    @jaccard.add_set("user44", ["blubb"])
+    @jaccard.add_set("user46", ["fnord", "shmoo"])
+    @jaccard.add_set("user48", ["fnord", "blubb"])
+    @jaccard.add_set("user50", ["fnord", "shmoo"])
+    res = @jaccard.similarities_for("fnord")
+    res.length.should == 2
+    res.should include ["shmoo", 0.75]
+    res.should include ["blubb", 0.4]
+  end
+
+  it "should calculate all similarities for an item (2/3)" do
+    @jaccard.add_set("user42", ["fnord", "blubb", "shmoo"])
+    @jaccard.add_set("user44", ["blubb"])
+    @jaccard.add_set("user46", ["fnord", "shmoo"])
+    @jaccard.add_set("user48", ["fnord", "blubb"])
+    @jaccard.add_set("user50", ["fnord", "shmoo"])
+    res = @jaccard.similarities_for("shmoo")
+    res.length.should == 2
+    res.should include ["blubb", 0.2]
+    res.should include ["fnord", 0.75]
+  end
+
+
+  it "should calculate all similarities for an item (3/3)" do
+    @jaccard.add_set("user42", ["fnord", "blubb", "shmoo"])
+    @jaccard.add_set("user44", ["blubb"])
+    @jaccard.add_set("user46", ["fnord", "shmoo"])
+    @jaccard.add_set("user48", ["fnord", "blubb"])
+    @jaccard.add_set("user50", ["fnord", "shmoo"])
+    res = @jaccard.similarities_for("blubb")
+    res.length.should == 2
+    res.should include ["shmoo", 0.2]
+    res.should include ["fnord", 0.4]
+  end
+
+
+  it "should return all_items" do
+    @jaccard.add_set("user42", ["fnord", "blubb"])
+    @jaccard.add_set("user23", ["hans", "wurst"])
+    @jaccard.all_items.length.should == 4
+    @jaccard.all_items.should include("wurst")
+    @jaccard.all_items.should include("fnord")
+    @jaccard.all_items.should include("hans")
+    @jaccard.all_items.should include("wurst")
+  end
+
 end
+
 
