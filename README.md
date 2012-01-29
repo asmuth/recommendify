@@ -22,7 +22,7 @@ synopsis
 
 ```ruby
 
-class RecommendedItem < RedisSimilarItems::Base
+class RecommendedItem < Recommendify::Base
 
   # we'll use a blah blah vector similarity function
   distance_function :blah
@@ -49,7 +49,6 @@ RecommendedItem.for("item54")
 ```
 
 
-
 similarity functions
 --------------------
 
@@ -58,15 +57,15 @@ similarity functions
 + `cosine_frequency`  Cosine distance/similarity (not yet implemented)
 + `pearson` Pearson correlation coefficient (not yet implemented)
 + `pearson_native` Pearson correlation coefficient  / Native implementation (not yet implemented)
-
++ `support_vector_machine` Support Vector Machine neighborhood (not yet implemented)
 
 
 does it scale?
 --------------
 
-The number of keys in the similarity matrix grows O(n^2) and and would result in a maximum of 2000001 million keys for 2 million products. However, in a real scenario it is very unlikely that all item<->item combinations appear in a interaction set.
+The number of keys in the similarity matrix grows O(n^2) and and would result in a maximum of 2000001 million keys for 2 million items. However, in a real scenario it is very unlikely that all item<->item combinations appear in a interaction set.
 
-The size of the computed nearest neighbors grows O(n). If we compute e.g. a maximum of 30 neighbors per product and assume no item_id is longer than 50 chars, then no set should be bigger than 50 + (50 * 30) = 2250bytes for the ids + (50 * 32) = 1600bytes for the scores, a total of 3850bytes + 25% redis overhead = 4812bytes per set. 
+The size of the computed nearest neighbors grows O(n). If we compute e.g. a maximum of 30 neighbors per item and assume no item_id is longer than 50 chars, then no set should be bigger than 50 + (50 * 30) = 2250bytes for the ids + (50 * 32) = 1600bytes for the scores, a total of 3850bytes + 25% redis overhead = 4812bytes per set. 
 
 This means 2 million items will - in the worst case - require 2000000 * 2 * 4812bytes = 18,3 gigabyte of memory.
 
@@ -138,6 +137,8 @@ Sources / References
 [3] Schafer J.B, Konstan J. and Riedl J. (1999). Recommender Systems in E-Commerce (Proceedings of ACM E-Commerce 1999 conference)
 
 [4] Adomavicius G. and Tuzhilin A. (2005). Towards the Next Generation of Recommender Systems: A Survey of the State-of-the-Art and Possible Extensions (IEEE Transactions on knowledge and data engineering)
+
+[5] kNN Versus SVM in the Collaborative Filtering Framework
 
 
 License
