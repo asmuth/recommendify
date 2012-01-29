@@ -59,14 +59,14 @@ describe Recommendify::JaccardProcessor do
     @jaccard.send(:calculate_jaccard, 
       ["foo", "bar", "fnord", "blubb"],
       ["bar", "fnord", "shmoo", "snafu"]
-    ).should = 2.0/6.0
+    ).should == 2.0/6.0
   end
 
   it "should calculate the correct similarity between to items" do
     @jaccard.add_set("user42", ["fnord", "blubb"])
     @jaccard.add_set("user44", ["blubb"])
     @jaccard.add_set("user46", ["fnord"])
-    @jaccard.add_set("user48", ["fnord, blubb"])
+    @jaccard.add_set("user48", ["fnord", "blubb"])
     @jaccard.add_set("user50", ["fnord"])
     # sim(fnord,blubb) = (users(fnord) & users(blub)) / (users(fnord) + users(blubb))
     # => {user42 user48} / {user42 user46 user48 user50} + {user42 user44 user48}
