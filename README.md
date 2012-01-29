@@ -3,21 +3,24 @@ recommendify
 
 Incremental and distributed item-based "Collaborative Filtering" for binary ratings with ruby and redis. In a nutshell: You feed in `user -> item` interactions and it spits out similarity vectors between items ("related items"). 
 
+
 ### use cases
 
 + "Users that bought this product also bought...". 
 + "Users that viewed this video also viewed...". 
 + "Users that follow this person also follow...". 
+
 etc.
+
 
 
 ### how it works
 
-Recommendify keeps an incrementally updated `item x item` matrix, the "co-concurrency matrix". This matrix stores the number of times that a combination of two items has appeared in an interaction/preferrence set. The co-concurrence counts are processed with a consine distance/similarity measure to retrieve another `item x item` similarity matrix, which is used to find the N most similar items for each item. This approach was described by Miranda, Alipio et al. [6]
+Recommendify keeps an incrementally updated `item x item` matrix, the "co-concurrency matrix". This matrix stores the number of times that a combination of two items has appeared in an interaction/preferrence set. The co-concurrence counts are processed with a similarity measure to retrieve another `item x item` similarity matrix, which is used to find the N most similar items for each item. This approach was described by Miranda, Alipio et al. [1]
 
 1. Group the input user->item pairs by user-id and store them into interaction sets
-2. For each item<->item combination in the interaction increment the respective element in the co-concurrence matrix
-3. For each item<->item combination in the co-concurrence matrix calculate (i,j): sim(i, j) = #(I∩J) / √#I×√#J 
+2. For each item<->item combination in the interaction set increment the respective element in the co-concurrence matrix
+3. For each item<->item combination in the co-concurrence matrix calculate the jaccard similarity
 3. For each item store the N most similar items in the respective output set.
 
 
@@ -28,41 +31,47 @@ Fnord is not a draft!
 usage
 -----
 
+You can add new interaction-sets to the processor incrementally, but the similarity matrix has to be manually re-processed after new interactions were added to any of the applied processors. However, the processing happens on-line and you can keep track of the changed items so you only have to re-calculate the changed rows of the matrix.
+
 ```ruby
 
-class RecommendedItem < Recommendify::Base
+# Our similarity matrix, we calculate the similarity via co-concurrence 
+# of items in "orders" and the co-concurrence of items in user-likes using 
+# two `item x item` matrices and the jaccard similarity measure.
+class RecommendedItem < Recommendify::SimilarityMatrix
 
-  # calculate a maximum of fifty neighbors per item
+  # store a maximum of fifty neighbors per item
   max_neighbors 50
 
-  # truncate user/actor rows to 200 items
-  max_coconcurrent 200
+  processor :order_item_sim, 
+    :similarity_func => :jaccard
+    :weight => 5.0
+  
+  processor :like_item_sim,
+    :similarity_func => :jaccard
+    :weight => 1.0
 
 end
 
-# clear the similarity matrix
-RecommendedItem.delete!
+# add `order_id->item_id` interactions to the processor (incremental)
+order_item_processor = RecommendedItem.order_item_sim
+order_item_processor.add_set("order1", ["item23", "item65", "item23"])
+order_item_processor.add_set("order2", ["item14", "item23"])
 
-# ...or degrade the similarity matrix by 0.5
-RecommendedItem.degrade!(0.5)
+# add `user_id->item_id` interactions to the processor (incremental)
+like_item_processor = RecommendedItem.like_item_sim
+like_item_processor.add_set("user1", ["item23", "item65", "item23"])
+like_item_processor.add_set("user2", ["item14", "item23"])
 
-# process the matrix (distributed)
-m.process!
+# Calculate all elements of the similarity matrix
+RecommendedItem.process!
 
-# delete the co-concurrence matrix
-m.delete!
+# ...or calculate a specific row of the similarity matrix (a specific item)
+RecommendedItem.process_item!("item65")
 
-# retrieve similar items to "item54"
-RecommendedItem.for("item54") 
+# retrieve similar items to "item23"
+RecommendedItem.for("item23") 
   => [ <RecommendedItem item_id:"item65" similarity:0.23>, (...) ]
-
-# get the similarity of a result
-RecommendedItem.for("item54").similarity
-  => 0.23
-
-# get the item_id of a result
-RecommendedItem.for("item54").item_id
-  => "item65"
 
 ```
 
@@ -81,23 +90,19 @@ ideas
 -----
 
 + rake benchmark CLASS=MySimilarityProcessor
-
++ NativeJaccardProcessor
++ CosineProcessor
 
 
 Sources / References
 --------------------
 
-[1] Sawar B., G. Karypis, Konstan J. and Riedel J. (2001). Item-Based Collaborative Filtering Recommendation Algorithms (GroupLens Research Group/Army HPC Research Center, University of Minnesota)
+[1] Miranda C. and Alipio J. (2008). Incremental collaborative ﬁltering for binary ratings (LIAAD - INESC Porto, University of Porto)
 
-[2] Herlocker J., Konstan J. Terveen L. and Ried J. (2004) Evaluating Collaborative Filtering Recommender Systems (GroupLens Research Group/Army HPC Research Center, University of Minnesota)
+[2] George Karypis (2000) Evaluation of Item-Based Top-N Recommendation Algorithms (University of Minnesota, Department of Computer Science / Army HPC Research Center)
 
-[3] Schafer J.B, Konstan J. and Riedl J. (1999). Recommender Systems in E-Commerce (Proceedings of ACM E-Commerce 1999 conference)
+[3] Shiwei Z., Junjie W. Hui X. and Guoping X. (2011) Scaling up top-K cosine similarity search (Data & Knowledge Engineering 70)
 
-[4] Adomavicius G. and Tuzhilin A. (2005). Towards the Next Generation of Recommender Systems: A Survey of the State-of-the-Art and Possible Extensions (IEEE Transactions on knowledge and data engineering)
-
-[5] Grcar M, Fortuna B. and Mladenic D. (2005). kNN Versus SVM in the Collaborative Filtering Framework (Jozef Stefan Institut, IST Programme of the European Community)
-
-[6] Miranda C. and Alipio J. (2008). Incremental collaborative ﬁltering for binary ratings (LIAAD - INESC Porto, University of Porto)
 
 
 License
