@@ -3,14 +3,13 @@ recommendify
 
 Incremental and distributed item-based "Collaborative Filtering" for binary ratings with ruby and redis. In a nutshell: You feed in `user -> item` interactions and it spits out similarity vectors between items ("related items"). 
 
+[ ![Build status - Travis-ci](https://secure.travis-ci.org/paulasmuth/recommendify.png) ](http://travis-ci.org/paulasmuth/recommendify)
 
 ### use cases
 
 + "Users that bought this product also bought...". 
 + "Users that viewed this video also viewed...". 
 + "Users that follow this person also follow...". 
-
-etc.
 
 
 
