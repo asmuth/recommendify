@@ -1,19 +1,27 @@
 recommendify
 ============
 
-Incremental and distributed item-based "Collaborative Filtering" for binary ratings with ruby and redis. In a nutshell: You feed in user->item interactions and it spits out similarity vectors between items ("related items"). 
+Incremental and distributed item-based "Collaborative Filtering" for binary ratings with ruby and redis. In a nutshell: You feed in `user -> item` interactions and it spits out similarity vectors between items ("related items"). 
 
-Fnord is not a draft!
-
-
-use cases
----------
+### use cases
 
 + "Users that bought this product also bought...". 
 + "Users that viewed this video also viewed...". 
 + "Users that follow this person also follow...". 
-
 etc.
+
+
+### how it works
+
+Recommendify keeps an incrementally updated `item x item` matrix, the "co-concurrency matrix". This matrix stores the number of times that a combination of two items has appeared in an interaction/preferrence set. The co-concurrence counts are processed with a consine distance/similarity measure to retrieve another `item x item` similarity matrix, which is used to find the N most similar items for each item. This approach was described by Miranda, Alipio et al. [6]
+
+1. Group the input user->item pairs by user-id and store them into interaction sets
+2. For each item<->item combination in the interaction increment the respective element in the co-concurrence matrix
+3. For each item<->item combination in the co-concurrence matrix calculate (i,j): sim(i, j) = #(I∩J) / √#I×√#J 
+3. For each item store the N most similar items in the respective output set.
+
+
+Fnord is not a draft!
 
 
 
@@ -38,21 +46,8 @@ RecommendedItem.delete!
 # ...or degrade the similarity matrix by 0.5
 RecommendedItem.degrade!(0.5)
 
-# create a new input/co-concurrence matrix
-m = RecommendedItem.create_matrix
-
-# add user->item interactions to the matrix
-m.add_vector("user1", "item54")
-m.add_vector("user1", "item38")
-m.add_vector("user1", "item47")
-m.add_vector("user2", "item65")
-m.add_vector("user2", "item54")
-
 # process the matrix (distributed)
 m.process!
-
-# apply the processed co-concurrence matrix to the similarity matrix with a score of 5
-m.apply!(5)
 
 # delete the co-concurrence matrix
 m.delete!
@@ -75,11 +70,11 @@ RecommendedItem.for("item54").item_id
 does it scale?
 --------------
 
-The number of keys in the similarity matrix grows O(n^2) and and would result in a maximum of 2000001 million keys for 2 million items. However, in a real scenario it is very unlikely that all item<->item combinations appear in a interaction set.
+The maximum number of entries in the co-concurrence and similarity matrix is k(n) = (n^2)-(n/2), it grows O(n^2) and and would result in a maximum of 2000001 million entries for 2 million items. However, in a real scenario it is very unlikely that all item<->item combinations appear in a interaction set and we use a sparse matrix which will only use memory for elemtens with a value > 0.
 
 The size of the computed nearest neighbors grows O(n). If we compute e.g. a maximum of 30 neighbors per item and assume no item_id is longer than 50 chars, then no set should be bigger than 50 + (50 * 30) = 2250bytes for the ids + (50 * 32) = 1600bytes for the scores, a total of 3850bytes + 25% redis overhead = 4812bytes per set. 
 
-This means 2 million items will - in the worst case - require 2000000 * 2 * 4812bytes = 18,3 gigabyte of memory.
+This means 2 million items will - in the worst case - require 2000000 * 2 * 4812bytes = 18,3 gigabyte of memory for the output data.
 
 
 ideas
