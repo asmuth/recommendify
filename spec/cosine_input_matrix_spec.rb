@@ -13,4 +13,6 @@ describe Recommendify::CosineInputMatrix do
   it_should_behave_like Recommendify::InputMatrix
   it_should_behave_like Recommendify::CCMatrix
 
+  it "should calculate the correct cosine similarity (here be dragons)"
+
 end

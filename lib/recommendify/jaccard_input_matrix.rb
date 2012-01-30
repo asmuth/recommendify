@@ -1,34 +1,9 @@
 class Recommendify::JaccardInputMatrix < Recommendify::InputMatrix
 
-  # todo: move to coconcurrencymatrix mixin
-  attr_reader :ccmatrix
+  include Recommendify::CCMatrix
 
   def initialize(opts={})
     super(opts)
-    # todo: move to coconcurrencymatrix mixin
-    @ccmatrix = Recommendify::SparseMatrix.new(
-      :redis_prefix => @opts.fetch(:redis_prefix),
-      :key => [@opts.fetch(:key), :ccmatrix].join(":")
-    )
-  end
-
-  # todo: move to coconcurrencymatrix mixin
-  def add_set(set_id, item_ids)
-    item_ids.each do |item_id|
-      item_count_incr(item_id)
-    end
-    all_pairs(item_ids).map do |pair| 
-      i1, i2 = pair.split(":") 
-      @ccmatrix.incr(i1, i2)
-    end
-  end
-
-  # todo: add single item to set after set was added (incrementally)
-  def add_single(set_id, item_id, other_item_ids)
-  #   item_count_incr(item_id)
-  #   other_item_ids.each do |other_item|
-  #     @ccmatrix.incr(item_id, other_idem)
-  #   end
   end
 
   def similarity(item1, item2)
@@ -46,27 +21,7 @@ class Recommendify::JaccardInputMatrix < Recommendify::InputMatrix
     end
   end
 
-  # todo: move to coconcurrencymatrix mixin
-  def all_items
-    Recommendify.redis.hkeys(redis_key(:items))
-  end
-
 private
-
-  # todo: move to coconcurrencymatrix mixin
-  def all_pairs(keys)
-    keys.map{ |k1| (keys-[k1]).map{ |k2| [k1,k2].sort.join(":") } }.flatten.uniq
-  end
-
-  # todo: move to coconcurrencymatrix mixin
-  def item_count_incr(key)
-    Recommendify.redis.hincrby(redis_key(:items), key, 1)
-  end
-
-  # todo: move to coconcurrencymatrix mixin
-  def item_count(key)
-    Recommendify.redis.hget(redis_key(:items), key).to_i
-  end
 
   def calculate_jaccard_cached(item1, item2)
     val = @ccmatrix[item1, item2]
