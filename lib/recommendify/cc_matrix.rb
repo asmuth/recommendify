@@ -1,0 +1,3 @@
+module Recommendify::CCMatrix
+
+end

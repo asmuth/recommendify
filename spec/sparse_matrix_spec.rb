@@ -3,14 +3,11 @@ require ::File.expand_path('../spec_helper', __FILE__)
 describe Recommendify::SparseMatrix do
 
   before(:all) do
-    Recommendify.redis = Redis.new
     @sm = Recommendify::SparseMatrix.new(:redis_prefix => "recommendify", :key => "mysparsematrix")
   end
 
   before(:each) do
-    Recommendify.redis.keys("recommendify*").each do |k|
-      Recommendify.redis.del(k)
-    end
+    flush_redis!
   end
   
   it "should build the correct keys" do
