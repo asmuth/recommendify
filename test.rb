@@ -1,7 +1,7 @@
 $: << ::File.expand_path("../lib", __FILE__)
 require "recommendify"
 
-class UserRecommender < Recommendify::SimilarityMatrix
+class UserRecommender < Recommendify::Base
 
   #max_neighbors 50
 

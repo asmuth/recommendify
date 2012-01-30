@@ -13,7 +13,7 @@ def flush_redis!
   end
 end
 
-class TestRecommender < Recommendify::SimilarityMatrix
+class TestRecommender < Recommendify::Base
 
   input_matrix :jaccard_one, 
     :similarity_func => :jaccard
