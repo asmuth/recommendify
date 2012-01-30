@@ -1,4 +1,4 @@
-class Recommendify::JaccardMatrix < Recommendify::InputMatrix
+class Recommendify::JaccardInputMatrix < Recommendify::InputMatrix
 
   # todo: move to coconcurrencymatrix mixin
   attr_reader :ccmatrix

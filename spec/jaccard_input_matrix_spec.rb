@@ -1,9 +1,9 @@
 require ::File.expand_path('../spec_helper', __FILE__)
 
-describe Recommendify::JaccardMatrix do
+describe Recommendify::JaccardInputMatrix do
 
   before(:all) do
-    @matrix = Recommendify::JaccardMatrix.new(:redis_prefix => "recommendify", :key => "mymatrix")
+    @matrix = Recommendify::JaccardInputMatrix.new(:redis_prefix => "recommendify", :key => "mymatrix")
   end
 
   before(:each) do
