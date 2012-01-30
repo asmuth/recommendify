@@ -71,17 +71,6 @@ describe Recommendify::JaccardInputMatrix do
     res.should include ["fnord", 0.4]
   end
 
-
-  it "should return all_items" do
-    @matrix.add_set("user42", ["fnord", "blubb"])
-    @matrix.add_set("user23", ["hans", "wurst"])
-    @matrix.all_items.length.should == 4
-    @matrix.all_items.should include("wurst")
-    @matrix.all_items.should include("fnord")
-    @matrix.all_items.should include("hans")
-    @matrix.all_items.should include("wurst")
-  end
-
 end
 
 
