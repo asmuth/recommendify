@@ -19,3 +19,15 @@ class TestRecommender < Recommendify::Base
     :similarity_func => :jaccard
 
 end
+
+class Recommendify::TestInputMatrix
+  
+  def initialize(opts)
+  	@opts = opts
+  end
+
+  def method_missing(method, *args)
+  	@opts[method]
+  end
+
+end

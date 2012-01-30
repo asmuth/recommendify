@@ -113,6 +113,7 @@ todo
 + implement NativeJaccardInputMatrix (C)
 + implement NativeCosineInputMatrix (C)
 + todo: remove item (remove from all matrices)
++ redis prefix issue
 
 Sources / References
 --------------------
