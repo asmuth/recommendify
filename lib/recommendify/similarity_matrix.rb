@@ -12,10 +12,26 @@ class Recommendify::SimilarityMatrix
     @@input_matrices[key] = opts
   end
 
-  def initialize
-    @input_matrices = Hash.new[@@input_matrices.map{ |key, opts| 
+  def self.input_matrices
+    @@input_matrices
+  end
+
+  def initialize    
+    @input_matrices = Hash[self.class.input_matrices.map{ |key, opts| 
       [ key, Recommendify::InputMatrix.create(opts.merge(:key => key)) ]
     }]
+  end
+
+  def method_missing(method, *args)
+    if @input_matrices.has_key?(method)
+      @input_matrices[method]
+    else
+      raise NoMethodError.new(method.to_s)
+    end
+  end
+
+  def respond_to?(method)
+    @input_matrices.has_key?(method) ? true : super
   end
 
   def process!
