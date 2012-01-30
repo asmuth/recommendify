@@ -88,10 +88,11 @@ This means 2 million items will - in the worst case - require 2000000 * 2 * 4812
 todo
 -----
 
-+ rename *Processor to *InputMatrix
 + rake benchmark CLASS=MySimilarityMatrix
-+ NativeJaccardInputMatrix
-+ CosineInputMatrix
++ optimize JaccardInputMatrix
++ implement CosineInputMatrix
++ implement NativeJaccardInputMatrix (C)
++ implement NativeCosineInputMatrix (C)
 
 
 Sources / References
