@@ -1,4 +1,4 @@
-class Recommendify::Processor
+class Recommendify::InputMatrix
 
   def initialize(opts)
     @opts = opts

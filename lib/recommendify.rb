@@ -1,5 +1,5 @@
 require "recommendify/base"
-require "recommendify/processor"
 require "recommendify/sparse_matrix"
+require "recommendify/input_matrix"
 require "recommendify/similarity_matrix"
-require "recommendify/jaccard_processor"
+require "recommendify/jaccard_matrix"
