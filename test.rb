@@ -3,9 +3,9 @@ require "recommendify"
 
 class UserRecommender < Recommendify::SimilarityMatrix
 
-  max_neighbors 50
+  #max_neighbors 50
 
-  processor :visits, 
+  input_matrix :visits, 
     :similarity_func => :jaccard
 end
 
