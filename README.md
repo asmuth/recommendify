@@ -19,7 +19,7 @@ Recommendify keeps an incrementally updated `item x item` matrix, the "co-concur
 
 1. Group the input user->item pairs by user-id and store them into interaction sets
 2. For each item<->item combination in the interaction set increment the respective element in the co-concurrence matrix
-3. For each item<->item combination in the co-concurrence matrix calculate the jaccard similarity
+3. For each item<->item combination in the co-concurrence matrix calculate the jaccard/cosine similarity
 3. For each item store the N most similar items in the respective output set.
 
 
