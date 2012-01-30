@@ -36,37 +36,51 @@ You can add new interaction-sets to the processor incrementally, but the similar
 
 # Our similarity matrix, we calculate the similarity via co-concurrence 
 # of items in "orders" and the co-concurrence of items in user-likes using 
-# two `item x item` matrices and the jaccard similarity measure.
-class RecommendedItem < Recommendify::SimilarityMatrix
+# two `item x item` matrices and the jaccard/cosine similarity measure.
+class RecommendedItem < Recommendify::Base
 
   # store a maximum of fifty neighbors per item
   max_neighbors 50
 
+  # define an input data set "order_item_sim". we'll add "order_id->item_id"
+  # pairs to this input and use the jaccard coefficient to retrieve a 
+  # "customers that ordered item i1 also ordered item i2" statement and apply
+  # the result to the item<->item similarity matrix with a weight of 5.0
   input_matrix :order_item_sim, 
-    :similarity_func => :jaccard
+    :similarity_func => :jaccard,
     :weight => 5.0
   
+  # define an input data set "like_item_sim". we'll add "user_id->item_id"
+  # pairs to this input and use a cosine-based similarity measure to retrieve 
+  # a "users that liked item i1 also liked item i2" statement and apply the 
+  # result to the item<->item similarity matrix with a weight of 1.0
   input_matrix :like_item_sim,
-    :similarity_func => :jaccard
+    :similarity_func => :cosine,
     :weight => 1.0
 
 end
 
-# add `order_id->item_id` interactions to the processor (incremental)
+
+# add `order_id->item_id` interactions to the order_item_sim input
+# you can add data incrementally and call RecommendedItem.process! to update
+# the similarity matrix at any time.
 order_item_matrix = RecommendedItem.order_item_sim
 order_item_matrix.add_set("order1", ["item23", "item65", "item23"])
 order_item_matrix.add_set("order2", ["item14", "item23"])
 
-# add `user_id->item_id` interactions to the processor (incremental)
+# add `user_id->item_id` interactions to the like_time_sim input
 like_item_matrix = RecommendedItem.like_item_sim
 like_item_matrix.add_set("user1", ["item23", "item65", "item23"])
 like_item_matrix.add_set("user2", ["item14", "item23"])
+
 
 # Calculate all elements of the similarity matrix
 RecommendedItem.process!
 
 # ...or calculate a specific row of the similarity matrix (a specific item)
+# use this to avoid re-processing the whole matrix after incremental updates
 RecommendedItem.process_item!("item65")
+
 
 # retrieve similar items to "item23"
 RecommendedItem.for("item23") 
