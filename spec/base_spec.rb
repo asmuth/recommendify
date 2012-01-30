@@ -19,4 +19,10 @@ describe Recommendify do
     Recommendify.capitalize("Fuubar").should == "Fuubar"
   end
 
+  it "should constantize a string" do
+    obj = Recommendify.constantize("JaccardInputMatrix")
+    # should_be doesn't work here...
+    obj.inspect.should == "Recommendify::JaccardInputMatrix"
+  end
+
 end
