@@ -1,5 +1,10 @@
 class Recommendify::InputMatrix
 
+  def self.create(opts)
+    klass = "#{Recommendify.capitalize(opts[:similarity_func])}InputMatrix"
+    Recommendify.constantize(klass.intern).new(opts)
+  end
+
   def initialize(opts)
     @opts = opts
   end

@@ -12,4 +12,11 @@ describe Recommendify do
     lambda{ ecommendify.redis }.should raise_error
   end
 
+  it "should capitalize a string" do
+    Recommendify.capitalize("fuubar").should == "Fuubar"
+    Recommendify.capitalize("fuUBar").should == "Fuubar"
+    Recommendify.capitalize("FUUBAR").should == "Fuubar"
+    Recommendify.capitalize("Fuubar").should == "Fuubar"
+  end
+
 end

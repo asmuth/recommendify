@@ -20,8 +20,8 @@ describe Recommendify::InputMatrix do
      end
 
      it "should create an object with the correct class and pass opts" do
-       Recommendify::InputMatrix.create(:key => "fubar", :similarity_func => :jaccard)
-       obj.instance_variable_get(:@key).should == "fubar"
+       obj = Recommendify::InputMatrix.create(:key => "fubar", :similarity_func => :jaccard)
+       obj.instance_variable_get(:@opts)[:key].should == "fubar"
      end
 
   end
