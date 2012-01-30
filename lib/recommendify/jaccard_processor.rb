@@ -23,6 +23,14 @@ class Recommendify::JaccardProcessor < Recommendify::Processor
     end
   end
 
+  # todo: add single item to set after set was added (incrementally)
+  # def add_singe(set_id, item_id, other_item_ids)
+  #   item_count_incr(item_id)
+  #   other_item_ids.each do |other_item|
+  #     @ccmatrix.incr(item_id, other_idem)
+  #   end
+  # end
+
   def similarity(item1, item2)
     calculate_jaccard_cached(item1, item2)
   end

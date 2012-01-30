@@ -13,6 +13,11 @@ class Recommendify::Processor
   	raise "implemented in subclass"
   end
 
+  # add a single item to a set of item_ids to the matrix
+  def add_singele(set_id, item_id, other_item_ids)
+  	raise "implemented in subclass"
+  end
+
   # calculate the similarity between item1 and item1 (0.0-1.0)
   def similarity(item1, item2)
   	raise "implemented in subclass"
