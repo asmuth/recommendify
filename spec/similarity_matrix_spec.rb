@@ -3,10 +3,19 @@ require ::File.expand_path('../spec_helper', __FILE__)
 describe Recommendify::SimilarityMatrix do
 
   describe "configuration" do
-    
-    it "should remember max_neighbors if configured"
 
-    it "should return default max_neighbors if not configured"
+    it "should return default max_neighbors if not configured" do
+      Recommendify::DEFAULT_MAX_NEIGHBORS.should == 50
+      Recommendify::SimilarityMatrix.claass_variable_set(:@@max_neighbors, nil)
+      sm = Recommendify::SimilarityMatrix.new
+      sm.max_neighbors.should == 50
+    end
+      
+    it "should remember max_neighbors if configured" do
+      Recommendify::SimilarityMatrix.max_neighbors(23)
+      sm = Recommendify::SimilarityMatrix.new      
+      sm.max_neighbors.should == 23
+    end
 
     it "should add an input_matrix by 'key'"
 

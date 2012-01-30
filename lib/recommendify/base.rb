@@ -1,5 +1,7 @@
 module Recommendify
 
+  DEFAULT_MAX_NEIGHBORS = 50
+
   @@redis = nil
 
   def self.redis=(redis)
@@ -10,6 +12,5 @@ module Recommendify
     return @@redis unless @@redis.nil?
     raise "redis not configured! - Recommendify.redis = Redis.new"
   end
-
 
 end

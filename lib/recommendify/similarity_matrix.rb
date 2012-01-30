@@ -1,12 +1,23 @@
 class Recommendify::SimilarityMatrix
 
+  @@max_neighbors = nil
+
   def self.method_missing(method, *args)
     puts method
+  end
+
+  def self.max_neighbors(n=nil)    
+    return @@max_neighbors unless n
+    @@max_neighbors = n
   end
 
   def process!
     all_items = processors.map(&:all_items).flatten
     all_items.each{ |item_id| process_item!(item_id) }
+  end
+
+  def max_neighbors
+    self.class.max_neighbors || Recommendify::DEFAULT_MAX_NEIGHBORS
   end
 
   # TODO - PSEUDOCODE
