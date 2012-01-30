@@ -21,11 +21,7 @@ describe Recommendify::JaccardInputMatrix do
   end
 
   it "should calculate the correct similarity between to items" do
-    @matrix.add_set("user42", ["fnord", "blubb"])
-    @matrix.add_set("user44", ["blubb"])
-    @matrix.add_set("user46", ["fnord"])
-    @matrix.add_set("user48", ["fnord", "blubb"])
-    @matrix.add_set("user50", ["fnord"])
+    add_two_item_test_data!(@matrix)
     # sim(fnord,blubb) = (users(fnord) & users(blub)) / (users(fnord) + users(blubb))
     # => {user42 user48} / {user42 user46 user48 user50} + {user42 user44 user48}
     # => {user42 user48} / {user42 user44 user46 user48 user50}
@@ -35,11 +31,7 @@ describe Recommendify::JaccardInputMatrix do
   end
 
   it "should calculate all similarities for an item (1/3)" do
-    @matrix.add_set("user42", ["fnord", "blubb", "shmoo"])
-    @matrix.add_set("user44", ["blubb"])
-    @matrix.add_set("user46", ["fnord", "shmoo"])
-    @matrix.add_set("user48", ["fnord", "blubb"])
-    @matrix.add_set("user50", ["fnord", "shmoo"])
+    add_three_item_test_data!(@matrix)
     res = @matrix.similarities_for("fnord")
     res.length.should == 2
     res.should include ["shmoo", 0.75]
@@ -47,11 +39,7 @@ describe Recommendify::JaccardInputMatrix do
   end
 
   it "should calculate all similarities for an item (2/3)" do
-    @matrix.add_set("user42", ["fnord", "blubb", "shmoo"])
-    @matrix.add_set("user44", ["blubb"])
-    @matrix.add_set("user46", ["fnord", "shmoo"])
-    @matrix.add_set("user48", ["fnord", "blubb"])
-    @matrix.add_set("user50", ["fnord", "shmoo"])
+    add_three_item_test_data!(@matrix)
     res = @matrix.similarities_for("shmoo")
     res.length.should == 2
     res.should include ["blubb", 0.2]
@@ -60,15 +48,29 @@ describe Recommendify::JaccardInputMatrix do
 
 
   it "should calculate all similarities for an item (3/3)" do
-    @matrix.add_set("user42", ["fnord", "blubb", "shmoo"])
-    @matrix.add_set("user44", ["blubb"])
-    @matrix.add_set("user46", ["fnord", "shmoo"])
-    @matrix.add_set("user48", ["fnord", "blubb"])
-    @matrix.add_set("user50", ["fnord", "shmoo"])
+    add_three_item_test_data!(@matrix)
     res = @matrix.similarities_for("blubb")
     res.length.should == 2
     res.should include ["shmoo", 0.2]
     res.should include ["fnord", 0.4]
+  end
+
+private
+
+  def add_two_item_test_data!(matrix)
+    matrix.add_set("user42", ["fnord", "blubb"])
+    matrix.add_set("user44", ["blubb"])
+    matrix.add_set("user46", ["fnord"])
+    matrix.add_set("user48", ["fnord", "blubb"])
+    matrix.add_set("user50", ["fnord"])
+  end
+
+  def add_three_item_test_data!(matrix)
+    matrix.add_set("user42", ["fnord", "blubb", "shmoo"])
+    matrix.add_set("user44", ["blubb"])
+    matrix.add_set("user46", ["fnord", "shmoo"])
+    matrix.add_set("user48", ["fnord", "blubb"])
+    matrix.add_set("user50", ["fnord", "shmoo"])
   end
 
 end
