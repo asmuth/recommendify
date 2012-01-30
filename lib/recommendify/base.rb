@@ -1,5 +1,7 @@
 class Recommendify::Base
 
+  attr_reader :similarity_matrix, :input_matrices
+
   @@max_neighbors = nil
   @@input_matrices = {}
 
@@ -20,6 +22,7 @@ class Recommendify::Base
     @input_matrices = Hash[self.class.input_matrices.map{ |key, opts| 
       [ key, Recommendify::InputMatrix.create(opts.merge(:key => key)) ]
     }]
+    @similarity_matrix = Recommendify::SimilarityMatrix.new
   end
 
   def method_missing(method, *args)
@@ -34,17 +37,28 @@ class Recommendify::Base
     @input_matrices.has_key?(method) ? true : super
   end
 
-  def process!
-    all_items = processors.map(&:all_items).flatten
-    all_items.each{ |item_id| process_item!(item_id) }
-  end
-
   def max_neighbors
     self.class.max_neighbors || Recommendify::DEFAULT_MAX_NEIGHBORS
   end
 
+  def all_items
+    @input_matrices.map{ |k,m| m.all_items }.flatten.uniq
+  end
+
+  def process!
+    all_items.each{ |item_id| process_item!(item_id) }
+  end
+
+  def process_item!(item_id)
+    neighbors = @input_matrices.inject([]) do |o,(k,m)|
+      o += m.similarities_for(item_id)
+    end
+    similarity_matrix.update(item_id, neighbors)
+  end
+
+
   # TODO - PSEUDOCODE
-  # def process_item!(item_id)
+  # 
   #  top_items = SortedSet.new
   #  processors.each do |p| 
   #	  sims = p.similarities_for(item_id)

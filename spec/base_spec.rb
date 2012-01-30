@@ -55,30 +55,37 @@ describe Recommendify::Base do
       Recommendify::Base.input_matrix(:myfirstinput, :similarity_func => :jaccard)
       Recommendify::Base.input_matrix(:mysecondinput, :similarity_func => :jaccard)
       sm = Recommendify::Base.new
-      sm.myfirstinput.should_receive(:similarities_for).with("fnorditem")
-      sm.mysecondinput.should_receive(:similarities_for).with("fnorditem")
+      sm.myfirstinput.should_receive(:similarities_for).with("fnorditem").and_return([["fooitem",0.5]])
+      sm.mysecondinput.should_receive(:similarities_for).with("fnorditem").and_return([["fooitem",0.5]])
+      sm.similarity_matrix.stub!(:update)
       sm.process_item!("fnorditem")
     end
 
     it "should call similarities_for on each input_matrix and add all outputs to the similarity matrix" do
-      Recommendify::Base.input_matrix(:myfirstinput, :similarity_func => :jaccard)
-      Recommendify::Base.input_matrix(:mysecondinput, :similarity_func => :jaccard)
+      Recommendify::Base.input_matrix(:myfirstinput, :similarity_func => :test, 
+        :all_items => ["fnorditem", "fooitem"],
+        :similarities_for => [["fooitem",0.5]]
+      )
+      Recommendify::Base.input_matrix(:mysecondinput, :similarity_func => :test, 
+        :all_items => ["fnorditem", "fooitem"],
+        :similarities_for => [["fooitem",0.75]]
+      )
       sm = Recommendify::Base.new
-      sm.myfirstinput.should_receive(:similarities_for).and_return(0.5)
-      sm.mysecondinput.should_receive(:similarities_for).and_return(0.75)
-      sm.should_receive(:all_items).and_return(["fnorditem", "fooitem"])
-      sm.similarity_matrix.should_receive(:update).with("fnorditem", [["fooitem",0.75],["fooitem",0.5]])
+      sm.similarity_matrix.should_receive(:update).with("fnorditem", [["fooitem",0.5],["fooitem",0.75]])
       sm.process_item!("fnorditem")
     end
 
     it "should call similarities_for on each input_matrix and add all outputs to the similarity matrix with weight" do
-      Recommendify::Base.input_matrix(:myfirstinput, :similarity_func => :jaccard)
-      Recommendify::Base.input_matrix(:mysecondinput, :similarity_func => :jaccard)
+      Recommendify::Base.input_matrix(:myfirstinput, :similarity_func => :test, 
+        :all_items => ["fnorditem", "fooitem"],
+        :similarities_for => [["fooitem",0.5]]
+      )
+      Recommendify::Base.input_matrix(:mysecondinput, :similarity_func => :test, 
+        :all_items => ["fnorditem", "fooitem"],
+        :similarities_for => [["fooitem",0.75]]
+      )
       sm = Recommendify::Base.new
-      sm.myfirstinput.should_receive(:similarities_for).and_return(0.5)
-      sm.mysecondinput.should_receive(:similarities_for).and_return(0.75)
-      sm.should_receive(:all_items).and_return(["fnorditem", "fooitem"])
-      sm.similarity_matrix.should_receive(:update).with("fnorditem", [["fooitem",0.75],["fooitem",2.0]])
+      sm.similarity_matrix.should_receive(:update).with("fnorditem", [["fooitem",0.5],["fooitem",2.0]])
       sm.process_item!("fnorditem")
     end
 
@@ -103,12 +110,6 @@ describe Recommendify::Base do
       sm.all_items.should include("fnord")
     end
 
-    it "should calculate the top max_neighbors items"
-
-    it "should store the top max_neighbors items"
-
-    it "should retrieve the top max_neighbors items after stored"
-
   end
 
   describe "process!" do
@@ -117,7 +118,7 @@ describe Recommendify::Base do
       Recommendify::Base.input_matrix(:anotherinput, :similarity_func => :test, :all_items => ["foo", "bar"])
       Recommendify::Base.input_matrix(:yetanotherinput, :similarity_func => :test, :all_items => ["fnord", "shmoo"])
       sm = Recommendify::Base.new    
-      sm.should_receive(:process_item).exactly(4).times
+      sm.should_receive(:process_item!).exactly(4).times
       sm.process!
     end
 
@@ -125,9 +126,23 @@ describe Recommendify::Base do
       Recommendify::Base.input_matrix(:anotherinput, :similarity_func => :test, :all_items => ["foo", "bar"])
       Recommendify::Base.input_matrix(:yetanotherinput, :similarity_func => :test, :all_items => ["fnord", "bar"])
       sm = Recommendify::Base.new    
-      sm.should_receive(:process_item).exactly(3).times
+      sm.should_receive(:process_item!).exactly(3).times
       sm.process!
     end
+
+  end
+
+  describe "for(item_id)" do
+
+    it "should retrieve the n-most similar neighbors"
+
+    it "should retrieve the n-most similar neighbors in the correct order"
+
+    it "should retrieve the n-most similar neighbors in the correct order as Recommendify::Result objects"
+
+    it "should return an empty array if the item if no neighbors were found"
+
+    it "should return an empty array if the item is unknown"
 
   end
 
