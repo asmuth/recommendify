@@ -42,25 +42,25 @@ class RecommendedItem < Recommendify::SimilarityMatrix
   # store a maximum of fifty neighbors per item
   max_neighbors 50
 
-  processor :order_item_sim, 
+  input_matrix :order_item_sim, 
     :similarity_func => :jaccard
     :weight => 5.0
   
-  processor :like_item_sim,
+  input_matrix :like_item_sim,
     :similarity_func => :jaccard
     :weight => 1.0
 
 end
 
 # add `order_id->item_id` interactions to the processor (incremental)
-order_item_processor = RecommendedItem.order_item_sim
-order_item_processor.add_set("order1", ["item23", "item65", "item23"])
-order_item_processor.add_set("order2", ["item14", "item23"])
+order_item_matrix = RecommendedItem.order_item_sim
+order_item_matrix.add_set("order1", ["item23", "item65", "item23"])
+order_item_matrix.add_set("order2", ["item14", "item23"])
 
 # add `user_id->item_id` interactions to the processor (incremental)
-like_item_processor = RecommendedItem.like_item_sim
-like_item_processor.add_set("user1", ["item23", "item65", "item23"])
-like_item_processor.add_set("user2", ["item14", "item23"])
+like_item_matrix = RecommendedItem.like_item_sim
+like_item_matrix.add_set("user1", ["item23", "item65", "item23"])
+like_item_matrix.add_set("user2", ["item14", "item23"])
 
 # Calculate all elements of the similarity matrix
 RecommendedItem.process!
@@ -85,12 +85,13 @@ The size of the computed nearest neighbors grows O(n). If we compute e.g. a maxi
 This means 2 million items will - in the worst case - require 2000000 * 2 * 4812bytes = 18,3 gigabyte of memory for the output data.
 
 
-ideas
+todo
 -----
 
-+ rake benchmark CLASS=MySimilarityProcessor
-+ NativeJaccardProcessor
-+ CosineProcessor
++ rename *Processor to *InputMatrix
++ rake benchmark CLASS=MySimilarityMatrix
++ NativeJaccardInputMatrix
++ CosineInputMatrix
 
 
 Sources / References
