@@ -1,14 +1,21 @@
 class Recommendify::SimilarityMatrix
 
   @@max_neighbors = nil
-
-  def self.method_missing(method, *args)
-    puts method
-  end
+  @@input_matrices = {}
 
   def self.max_neighbors(n=nil)    
     return @@max_neighbors unless n
     @@max_neighbors = n
+  end
+
+  def self.input_matrix(key, opts)
+    @@input_matrices[key] = opts
+  end
+
+  def initialize
+    @input_matrices = Hash.new[@@input_matrices.map{ |key, opts| 
+      [ key, Recommendify::InputMatrix.create(opts.merge(:key => key)) ]
+    }]
   end
 
   def process!

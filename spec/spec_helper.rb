@@ -15,7 +15,7 @@ end
 
 class TestRecommender < Recommendify::SimilarityMatrix
 
-  processor :jaccard_one, 
+  input_matrix :jaccard_one, 
     :similarity_func => :jaccard
 
 end
