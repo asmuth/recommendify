@@ -86,6 +86,11 @@ RecommendedItem.process_item!("item65")
 RecommendedItem.for("item23") 
   => [ <RecommendedItem item_id:"item65" similarity:0.23>, (...) ]
 
+
+# remove "item23" from the similarity matrix and the input matrices. you should 
+# do this if your items 'expire', since it will speed up the calculation
+RecommendedItem.remove_item!("item23") 
+
 ```
 
 
@@ -107,7 +112,7 @@ todo
 + implement CosineInputMatrix
 + implement NativeJaccardInputMatrix (C)
 + implement NativeCosineInputMatrix (C)
-
++ todo: remove item (remove from all matrices)
 
 Sources / References
 --------------------
