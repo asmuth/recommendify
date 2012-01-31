@@ -24,7 +24,7 @@ class Recommendify::JaccardInputMatrix < Recommendify::InputMatrix
 private
 
   def calculate_jaccard_cached(item1, item2)
-    val = @ccmatrix[item1, item2]
+    val = ccmatrix[item1, item2]
     val.to_f / (item_count(item1)+item_count(item2)-val).to_f
   end
 
