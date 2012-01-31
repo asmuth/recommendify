@@ -59,23 +59,13 @@ class Recommendify::Base
   end
 
   def process_item!(item_id)
-    neighbors = @input_matrices.inject([]) do |o,(k,m)|
-      o += m.similarities_for(item_id).map do |i,w|        
+    input_matrices.map do |k,m|
+      neighbors = m.similarities_for(item_id).map do |i,w|        
         [i,w*m.weight]
       end
+      similarity_matrix.update(item_id, neighbors)
     end
-    similarity_matrix.update(item_id, neighbors)
+    similarity_matrix.commit_item!(item_id)
   end
-
-
-  # TODO - PSEUDOCODE
-  # 
-  #  top_items = SortedSet.new
-  #  processors.each do |p| 
-  #	  sims = p.similarities_for(item_id)
-  #	  top_items.merge_with_weight(sims, p.weight)
-  #  end
-  #  save_most_similar(item_id, top_items.range(0,max_neighbors))
-  # end
 
 end
