@@ -1,7 +1,7 @@
 share_examples_for Recommendify::InputMatrix do
   
   it "should build the correct keys" do
-    @matrix.redis_key.should == "recommendify:mymatrix"
+    @matrix.redis_key.should == "recommendify-test:mymatrix"
   end
 
   it "should respond to add_set" do

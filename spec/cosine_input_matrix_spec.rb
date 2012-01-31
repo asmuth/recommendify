@@ -3,7 +3,7 @@ require ::File.expand_path('../spec_helper', __FILE__)
 describe Recommendify::CosineInputMatrix do
 
   before(:all) do
-    @matrix = Recommendify::CosineInputMatrix.new(:redis_prefix => "recommendify", :key => "mymatrix")
+    @matrix = Recommendify::CosineInputMatrix.new(:redis_prefix => "recommendify-test", :key => "mymatrix")
   end
 
   before(:each) do

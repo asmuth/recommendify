@@ -1,14 +1,14 @@
 share_examples_for Recommendify::CCMatrix do
 
   it "should build a sparsematrix with the correct key" do
-    @matrix.ccmatrix.redis_key.should == "recommendify:mymatrix:ccmatrix"
+    @matrix.ccmatrix.redis_key.should == "recommendify-test:mymatrix:ccmatrix"
   end
 
   it "should increment all item counts on set addition" do
-    Recommendify.redis.hset("recommendify:mymatrix:items", "bar", 2)
+    Recommendify.redis.hset("recommendify-test:mymatrix:items", "bar", 2)
     @matrix.add_set("user123", ["foo", "bar"])
-    Recommendify.redis.hget("recommendify:mymatrix:items", "bar").to_i.should == 3
-    Recommendify.redis.hget("recommendify:mymatrix:items", "foo").to_i.should == 1
+    Recommendify.redis.hget("recommendify-test:mymatrix:items", "bar").to_i.should == 3
+    Recommendify.redis.hget("recommendify-test:mymatrix:items", "foo").to_i.should == 1
   end
 
   it "should increment all item<->item pairs on set addition" do

@@ -8,10 +8,19 @@ require ::File.expand_path('../cc_matrix_shared.rb', __FILE__)
 
 def flush_redis!
   Recommendify.redis = Redis.new
-  Recommendify.redis.keys("recommendify*").each do |k|
+  Recommendify.redis.keys("recommendify-test*").each do |k|
     Recommendify.redis.del(k)
   end
 end
+
+class Recommendify::Base
+
+  def redis_prefix
+    "recommendify-test"
+  end
+
+end
+
 
 class TestRecommender < Recommendify::Base
 
