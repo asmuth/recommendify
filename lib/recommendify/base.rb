@@ -51,7 +51,9 @@ class Recommendify::Base
 
   def process_item!(item_id)
     neighbors = @input_matrices.inject([]) do |o,(k,m)|
-      o += m.similarities_for(item_id)
+      o += m.similarities_for(item_id).map do |i,w|        
+        [i,w*m.weight]
+      end
     end
     similarity_matrix.update(item_id, neighbors)
   end

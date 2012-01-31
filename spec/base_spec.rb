@@ -62,30 +62,22 @@ describe Recommendify::Base do
     end
 
     it "should call similarities_for on each input_matrix and add all outputs to the similarity matrix" do
-      Recommendify::Base.input_matrix(:myfirstinput, :similarity_func => :test, 
-        :all_items => ["fnorditem", "fooitem"],
-        :similarities_for => [["fooitem",0.5]]
-      )
-      Recommendify::Base.input_matrix(:mysecondinput, :similarity_func => :test, 
-        :all_items => ["fnorditem", "fooitem"],
-        :similarities_for => [["fooitem",0.75]]
-      )
+      Recommendify::Base.input_matrix(:myfirstinput, :similarity_func => :jaccard)
+      Recommendify::Base.input_matrix(:mysecondinput, :similarity_func => :jaccard)
       sm = Recommendify::Base.new
+      sm.myfirstinput.should_receive(:similarities_for).and_return([["fooitem",0.5]])      
+      sm.mysecondinput.should_receive(:similarities_for).and_return([["fooitem",0.75]])
       sm.similarity_matrix.should_receive(:update).with("fnorditem", [["fooitem",0.5],["fooitem",0.75]])
       sm.process_item!("fnorditem")
     end
 
     it "should call similarities_for on each input_matrix and add all outputs to the similarity matrix with weight" do
-      Recommendify::Base.input_matrix(:myfirstinput, :similarity_func => :test, 
-        :all_items => ["fnorditem", "fooitem"],
-        :similarities_for => [["fooitem",0.5]]
-      )
-      Recommendify::Base.input_matrix(:mysecondinput, :similarity_func => :test, 
-        :all_items => ["fnorditem", "fooitem"],
-        :similarities_for => [["fooitem",0.75]]
-      )
+      Recommendify::Base.input_matrix(:myfirstinput, :similarity_func => :jaccard, :weight => 4.0)
+      Recommendify::Base.input_matrix(:mysecondinput, :similarity_func => :jaccard)
       sm = Recommendify::Base.new
-      sm.similarity_matrix.should_receive(:update).with("fnorditem", [["fooitem",0.5],["fooitem",2.0]])
+      sm.myfirstinput.should_receive(:similarities_for).and_return([["fooitem",0.5]])
+      sm.mysecondinput.should_receive(:similarities_for).and_return([["fooitem",0.75]])
+      sm.similarity_matrix.should_receive(:update).with("fnorditem", [["fooitem",2.0],["fooitem",0.75]])
       sm.process_item!("fnorditem")
     end
 

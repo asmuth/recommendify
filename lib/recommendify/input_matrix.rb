@@ -13,6 +13,10 @@ class Recommendify::InputMatrix
     [@opts.fetch(:redis_prefix), @opts.fetch(:key), append].flatten.compact.join(":")
   end
 
+  def weight
+    (@opts[:weight] || 1).to_f
+  end
+
   # add a set of item_ids to the matrix
   def add_set(set_id, item_ids)
     raise "implemented in subclass"
