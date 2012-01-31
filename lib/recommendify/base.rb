@@ -32,6 +32,10 @@ class Recommendify::Base
     "recommendify"
   end
 
+  def max_neighbors
+    self.class.max_neighbors || Recommendify::DEFAULT_MAX_NEIGHBORS
+  end
+
   def method_missing(method, *args)
     if @input_matrices.has_key?(method)
       @input_matrices[method]
@@ -42,10 +46,6 @@ class Recommendify::Base
 
   def respond_to?(method)
     @input_matrices.has_key?(method) ? true : super
-  end
-
-  def max_neighbors
-    self.class.max_neighbors || Recommendify::DEFAULT_MAX_NEIGHBORS
   end
 
   def all_items
