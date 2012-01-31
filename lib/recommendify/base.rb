@@ -20,9 +20,16 @@ class Recommendify::Base
 
   def initialize    
     @input_matrices = Hash[self.class.input_matrices.map{ |key, opts| 
-      [ key, Recommendify::InputMatrix.create(opts.merge(:key => key)) ]
+      opts.merge!(:key => key, :redis_prefix => redis_prefix)
+      [ key, Recommendify::InputMatrix.create(opts) ]
     }]
-    @similarity_matrix = Recommendify::SimilarityMatrix.new
+    @similarity_matrix = Recommendify::SimilarityMatrix.new(
+      :redis_prefix => redis_prefix
+    )
+  end
+
+  def redis_prefix
+    "recommendify"
   end
 
   def method_missing(method, *args)

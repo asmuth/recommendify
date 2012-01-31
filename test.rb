@@ -1,5 +1,19 @@
 $: << ::File.expand_path("../lib", __FILE__)
 require "recommendify"
+require "redis"
+
+# configure redis
+Recommendify.redis = Redis.new
+
+# load some test data
+buckets = Hash.new{ |h,k| h[k]=[] }
+IO.read("/home/paul/talentsuche_visits.csv").split("\n").each do |l|
+  user_id, item_id = l.split(",")
+  next if user_id.length == 0
+  buckets[user_id] << item_id
+end
+
+
 
 class UserRecommender < Recommendify::Base
 
@@ -10,17 +24,11 @@ class UserRecommender < Recommendify::Base
 end
 
 
-buckets = Hash.new{ |h,k| h[k]=[] }
-
-IO.read("/home/paul/talentsuche_visits.csv").split("\n").each do |l|
-  user_id, item_id = l.split(",")
-  buckets[user_id] << item_id
-end
+recommender = UserRecommender.new
 
 buckets.each do |user_id, items|
-  next if user_id.length == 0
   puts "#{user_id} -> #{items.join(",")}"  
-  UserRecommender.visits.add_set(user_id, items)
+  recommender.visits.add_set(user_id, items)
 end
 
-UserRecommender.process!
+recommender.process!
