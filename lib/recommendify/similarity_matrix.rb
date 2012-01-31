@@ -3,7 +3,16 @@ class Recommendify::SimilarityMatrix
   attr_reader :write_queue
 
   def initialize(opts={})
+    @opts = opts
     @write_queue = Hash.new{ |h,k| h[k] = {} }
+  end
+
+  def redis_key(append=nil)
+    [@opts.fetch(:redis_prefix), @opts.fetch(:key), append].flatten.compact.join(":")
+  end
+
+  def max_neighbors
+    @opts[:max_neighbors] || Recommendify::DEFAULT_MAX_NEIGHBORS
   end
 
   def update(item_id, neighbors)
@@ -25,7 +34,9 @@ class Recommendify::SimilarityMatrix
   end
 
   def commit_item!(item_id)
-    @write_queue.delete(item_id)
+    serialized = serialize_item(item_id)
+    Recommendify.redis.hset(redis_key, item_id, serialized)
+    @write_queue.delete(item_id)    
   end
 
   def retrieve_item(item_id)
@@ -39,6 +50,7 @@ private
   def serialize_item(item_id, max_precision=5)
     items = @write_queue[item_id].to_a
     items.sort!{ |a,b| b[1] <=> a[1] }
+    items = items[0..max_neighbors-1]
     items.map{ |i,s| "#{i}:#{s.to_s[0..max_precision]}" } * "|"
   end
 

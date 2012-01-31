@@ -23,7 +23,11 @@ class Recommendify::Base
       opts.merge!(:key => key, :redis_prefix => redis_prefix)
       [ key, Recommendify::InputMatrix.create(opts) ]
     }]
-    @similarity_matrix = Recommendify::SimilarityMatrix.new(:redis_prefix => redis_prefix)
+    @similarity_matrix = Recommendify::SimilarityMatrix.new(
+      :max_neighbors => max_neighbors,
+      :key => :similarities,
+      :redis_prefix => redis_prefix
+    )
   end
 
   def redis_prefix

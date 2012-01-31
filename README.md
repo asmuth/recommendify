@@ -115,6 +115,7 @@ todo
 + todo: remove item (remove from all matrices)
 + redis prefix issue
 + forbid ':' and '|' in item_ids
++ recommendify::base no key part issue
 
 Sources / References
 --------------------
