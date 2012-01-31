@@ -114,6 +114,7 @@ todo
 + implement NativeCosineInputMatrix (C)
 + todo: remove item (remove from all matrices)
 + redis prefix issue
++ forbid ':' and '|' in item_ids
 
 Sources / References
 --------------------
