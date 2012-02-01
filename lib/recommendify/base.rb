@@ -64,8 +64,7 @@ class Recommendify::Base
   end
 
   def process!
-    total = all_items.length
-    all_items.each_with_index{ |item_id,n| puts "processing #{item_id} - #{n}/#{total}"; process_item!(item_id) }
+    all_items.each{ |item_id,n| process_item!(item_id) }
   end
 
   def process_item!(item_id)
