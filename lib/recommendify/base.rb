@@ -54,6 +54,15 @@ class Recommendify::Base
     @input_matrices.map{ |k,m| m.all_items }.flatten.uniq
   end
 
+  def for(item_id)
+    similarity_matrix[item_id].map do |item_id, similarity|
+      Recommendify::Neighbor.new(
+        :item_id => item_id, 
+        :similarity => similarity
+      )
+    end.sort
+  end
+
   def process!
     total = all_items.length
     all_items.each_with_index{ |item_id,n| puts "processing #{item_id} - #{n}/#{total}"; process_item!(item_id) }
