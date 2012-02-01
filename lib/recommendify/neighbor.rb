@@ -13,7 +13,7 @@ class Recommendify::Neighbor
   end
 
   def <=>(other)
-    self.similarity <=> other.similarity
+    other.similarity <=> self.similarity
   end
 
 end
