@@ -93,8 +93,7 @@ recommender.remove_item!("item23")
 
 
 
-demo?
------
+### demo?
 
 ```
     (img here)
@@ -105,8 +104,7 @@ These recommendations were calculated from 2,3mb "profile visit"-data (taken fro
 
 
 
-does it scale?
---------------
+### does it scale?
 
 The maximum number of entries in the co-concurrence and similarity matrix is k(n) = (n^2)-(n/2), it grows O(n^2). However, in a real scenario it is very unlikely that all item<->item combinations appear in a interaction set and we use a sparse matrix which will only use memory for elemtens with a value > 0. The size of the similarity grows O(n). 
 
@@ -138,8 +136,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 
-todo
------
+### todo
 
 + rake benchmark CLASS=MySimilarityMatrix
 + optimize JaccardInputMatrix
