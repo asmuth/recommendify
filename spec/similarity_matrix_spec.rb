@@ -70,9 +70,16 @@ describe Recommendify::SimilarityMatrix do
       @matrix.write_queue["item_fnord"].length.should == 0
     end
 
-    it "should retrieve the n-most similar neighbors after stored"
+    it "should retrieve the n-most similar neighbors after stored" do
+      Recommendify.redis.hset("recommendify-test:mymatrix", "item_fnord", "item_blubb:0.6|item_foo:0.4")
+      @matrix["item_fnord"].keys.should include("item_blubb")
+      @matrix["item_fnord"].keys.should include("item_foo")
+    end
 
-    it "should retrieve the n-most similar neighbors after stored with scores"
+    it "should retrieve the n-most similar neighbors after stored with scores" do
+      Recommendify.redis.hset("recommendify-test:mymatrix", "item_fnord", "item_blubb:0.6|item_foo:0.4")
+      @matrix["item_fnord"].should == {"item_blubb" => 0.6, "item_foo" => 0.4}
+    end
 
   end
 

@@ -29,7 +29,7 @@ class Recommendify::SimilarityMatrix
     if @write_queue.has_key?(item_id)
       @write_queue[item_id]
     else
-      raise "here be dragons"
+      retrieve_item(item_id)
     end
   end
 
@@ -39,14 +39,17 @@ class Recommendify::SimilarityMatrix
     @write_queue.delete(item_id)    
   end
 
+  # optimize: the items are already stored in a sorted fashion. we shouldn't 
+  # throw away this info by storing them in a hash (and re-sorting later). maybe 
+  # use activesupport's orderedhash?
   def retrieve_item(item_id)
-
+    data = Recommendify.redis.hget(redis_key, item_id)
+    Hash[data.split("|").map{ |i| (k,s=i.split(":")) && [k,s.to_f] }]
   end
 
 private
 
-  # optimize: implement a better sort. never add more than 50 items 
-  # the the array
+  # optimize: implement a better sort. never add more than 50 items the the array
   def serialize_item(item_id, max_precision=5)
     items = @write_queue[item_id].to_a
     items.sort!{ |a,b| b[1] <=> a[1] }
