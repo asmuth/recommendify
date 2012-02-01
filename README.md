@@ -116,6 +116,8 @@ todo
 + redis prefix issue
 + forbid ':' and '|' in item_ids
 + recommendify::base no key part issue
++ optimize sparsematrix memory usage (somehow)
++ make max_row length configurable
 
 Sources / References
 --------------------
