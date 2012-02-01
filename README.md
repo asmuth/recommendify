@@ -37,71 +37,79 @@ You can add new interaction-sets to the processor incrementally, but the similar
 # Our similarity matrix, we calculate the similarity via co-concurrence 
 # of items in "orders" and the co-concurrence of items in user-likes using 
 # two `item x item` matrices and the jaccard/cosine similarity measure.
-class RecommendedItem < Recommendify::Base
+class MyRecommender < Recommendify::Base
 
   # store a maximum of fifty neighbors per item
   max_neighbors 50
 
-  # define an input data set "order_item_sim". we'll add "order_id->item_id"
+  # define an input data set "order_item_s". we'll add "order_id->item_id"
   # pairs to this input and use the jaccard coefficient to retrieve a 
   # "customers that ordered item i1 also ordered item i2" statement and apply
   # the result to the item<->item similarity matrix with a weight of 5.0
-  input_matrix :order_item_sim, 
+  input_matrix :order_items, 
     :similarity_func => :jaccard,
     :weight => 5.0
   
-  # define an input data set "like_item_sim". we'll add "user_id->item_id"
+  # define an input data set "like_item_s". we'll add "user_id->item_id"
   # pairs to this input and use a cosine-based similarity measure to retrieve 
   # a "users that liked item i1 also liked item i2" statement and apply the 
   # result to the item<->item similarity matrix with a weight of 1.0
-  input_matrix :like_item_sim,
+  input_matrix :like_items
     :similarity_func => :cosine,
     :weight => 1.0
 
 end
 
+recommender = MyRecommender.new
 
 # add `order_id->item_id` interactions to the order_item_sim input
 # you can add data incrementally and call RecommendedItem.process! to update
 # the similarity matrix at any time.
-order_item_matrix = RecommendedItem.order_item_sim
-order_item_matrix.add_set("order1", ["item23", "item65", "item23"])
-order_item_matrix.add_set("order2", ["item14", "item23"])
+recommender.order_items.add_set("order1", ["item23", "item65", "item23"])
+recommender.order_items.add_set("order2", ["item14", "item23"])
 
 # add `user_id->item_id` interactions to the like_time_sim input
-like_item_matrix = RecommendedItem.like_item_sim
-like_item_matrix.add_set("user1", ["item23", "item65", "item23"])
-like_item_matrix.add_set("user2", ["item14", "item23"])
+recommender.like_items.add_set("user1", ["item23", "item65", "item23"])
+recommender.like_items.add_set("user2", ["item14", "item23"])
 
 
 # Calculate all elements of the similarity matrix
-RecommendedItem.process!
+recommender.process!
 
 # ...or calculate a specific row of the similarity matrix (a specific item)
 # use this to avoid re-processing the whole matrix after incremental updates
-RecommendedItem.process_item!("item65")
+recommender.process_item!("item65")
 
 
 # retrieve similar items to "item23"
-RecommendedItem.for("item23") 
-  => [ <RecommendedItem item_id:"item65" similarity:0.23>, (...) ]
+recommender.for("item23") 
+  => [ <Recommendify::Neighbor item_id:"item65" similarity:0.23>, (...) ]
 
 
 # remove "item23" from the similarity matrix and the input matrices. you should 
 # do this if your items 'expire', since it will speed up the calculation
-RecommendedItem.remove_item!("item23") 
+recommender.remove_item!("item23") 
 
 ```
+
+
+
+demo?
+-----
+
+```
+    (img here)
+```
+
+These recommendations were calculated from 2,3mb "profile visit"-data (taken from www.talentsuche.de). Initially processing the 120.047 `visitor_id->profile_id` pairs currently takes around half an hour on a single core and creates a 126.64mb hashtable in redis. You can try this for yourself; the complete data and code is in `doc/example.rb` and `doc/example_data.csv`.
+
 
 
 does it scale?
 --------------
 
-The maximum number of entries in the co-concurrence and similarity matrix is k(n) = (n^2)-(n/2), it grows O(n^2) and and would result in a maximum of 2000001 million entries for 2 million items. However, in a real scenario it is very unlikely that all item<->item combinations appear in a interaction set and we use a sparse matrix which will only use memory for elemtens with a value > 0.
+The maximum number of entries in the co-concurrence and similarity matrix is k(n) = (n^2)-(n/2), it grows O(n^2). However, in a real scenario it is very unlikely that all item<->item combinations appear in a interaction set and we use a sparse matrix which will only use memory for elemtens with a value > 0. The size of the similarity grows O(n). 
 
-The size of the computed nearest neighbors grows O(n). If we compute e.g. a maximum of 30 neighbors per item and assume no item_id is longer than 50 chars, then no set should be bigger than 50 + (50 * 30) = 2250bytes for the ids + (50 * 32) = 1600bytes for the scores, a total of 3850bytes + 25% redis overhead = 4812bytes per set. 
-
-This means 2 million items will - in the worst case - require 2000000 * 2 * 4812bytes = 18,3 gigabyte of memory for the output data.
 
 
 todo
@@ -119,6 +127,8 @@ todo
 + optimize sparsematrix memory usage (somehow)
 + make max_row length configurable
 + option: only add items where co-concurreny/appearnce-count > n
+
+
 
 Sources / References
 --------------------
