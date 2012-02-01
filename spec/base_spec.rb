@@ -128,15 +128,33 @@ describe Recommendify::Base do
 
   describe "for(item_id)" do
 
-    it "should retrieve the n-most similar neighbors"
+    it "should retrieve the n-most similar neighbors" do
+      sm = Recommendify::Base.new
+      sm.similarity_matrix.should_receive(:[]).with("fnorditem").and_return({:fooitem => 0.4, :baritem => 1.5})
+      sm.for("fnorditem").length.should == 2
+    end
 
-    it "should retrieve the n-most similar neighbors in the correct order"
+    it "should retrieve the n-most similar neighbors as Recommendify::Neighbor objects" do
+      sm = Recommendify::Base.new
+      sm.similarity_matrix.should_receive(:[]).with("fnorditem").and_return({:fooitem => 0.4, :baritem => 1.5})
+      sm.for("fnorditem").first.should be_a(Recommendify::Neighbor)
+      sm.for("fnorditem").last.should be_a(Recommendify::Neighbor)
+    end
 
-    it "should retrieve the n-most similar neighbors in the correct order as Recommendify::Result objects"
+    it "should retrieve the n-most similar neighbors in the correct order" do
+      sm = Recommendify::Base.new
+      sm.similarity_matrix.should_receive(:[]).with("fnorditem").and_return({:fooitem => 0.4, :baritem => 1.5})
+      sm.for("fnorditem").first.similarity.should == 1.5
+      sm.for("fnorditem").first.item_id.should == "fooitem"
+      sm.for("fnorditem").last.similarity.should == 0.4
+      sm.for("fnorditem").last.item_id.should == "bar"
+    end
 
-    it "should return an empty array if the item if no neighbors were found"
-
-    it "should return an empty array if the item is unknown"
+    it "should return an empty array if the item if no neighbors were found" do
+      sm = Recommendify::Base.new
+      sm.similarity_matrix.should_receive(:[]).with("fnorditem").and_return({})
+      sm.for("fnorditem").should == []
+    end
 
   end
 
