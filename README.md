@@ -118,6 +118,7 @@ todo
 + recommendify::base no key part issue
 + optimize sparsematrix memory usage (somehow)
 + make max_row length configurable
++ option: only add items where co-concurreny/appearnce-count > n
 
 Sources / References
 --------------------
