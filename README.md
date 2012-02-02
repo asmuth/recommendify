@@ -95,9 +95,9 @@ recommender.remove_item!("item23")
 
 ### demo?
 
-```
-    (img here)
-```
+[ ![Example Results](https://raw.github.com/paulasmuth/recommendify/master/doc/example.png) ](http://falbala.23loc.com/~paul/recommendify_out_1.html)
+
+full snippet: http://falbala.23loc.com/~paul/recommendify_out_1.html 
 
 These recommendations were calculated from 2,3mb "profile visit"-data (taken from www.talentsuche.de). Initially processing the 120.047 `visitor_id->profile_id` pairs currently takes around half an hour on a single core and creates a 126.64mb hashtable in redis. You can try this for yourself; the complete data and code is in `doc/example.rb` and `doc/example_data.csv`.
 
