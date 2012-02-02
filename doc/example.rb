@@ -25,17 +25,17 @@ IO.read("example_data.csv").split("\n").each do |l|
 end
 
 # add the test data to the recommender
-buckets.each do |user_id, items|
-  puts "#{user_id} -> #{items.join(",")}"  
-  recommender.visits.add_set(user_id, items)
-end
+#buckets.each do |user_id, items|
+#  puts "#{user_id} -> #{items.join(",")}"  
+#  recommender.visits.add_set(user_id, items)
+#end
 
 # process all items (equivalent to recommender.process!)
-num_items = (all_items = recommender.all_items).size
-all_items.each_with_index do |item_id, n|
-  puts "processing #{item_id} (#{n}/#{num_items})"
-  recommender.process_item!(item_id)
-end
+#num_items = (all_items = recommender.all_items).size
+#all_items.each_with_index do |item_id, n|
+#  puts "processing #{item_id} (#{n}/#{num_items})"
+#  recommender.process_item!(item_id)
+#end
 
 
 # generate a html page
