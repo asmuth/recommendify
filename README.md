@@ -93,7 +93,8 @@ recommender.remove_item!("item23")
 
 
 
-### demo?
+demo?
+-----
 
 [ ![Example Results](https://raw.github.com/paulasmuth/recommendify/master/doc/example.png) ](http://falbala.23loc.com/~paul/recommendify_out_1.html)
 
