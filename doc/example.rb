@@ -26,7 +26,8 @@ end
 
 # add the test data to the recommender
 buckets.each do |user_id, items|
-  puts "#{user_id} -> #{items.join(",")}"  
+  puts "#{user_id} -> #{items.join(",")}"
+  items = items[0..99] # do not add more than 100 items per user
   recommender.visits.add_set(user_id, items)
 end
 

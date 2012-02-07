@@ -108,11 +108,13 @@ The maximum number of entries in the co-concurrence and similarity matrix is k(n
 example
 -------
 
+These recommendations were calculated from 2,3mb "profile visit"-data (taken from www.talentsuche.de) - keep in mind that the recommender uses only visitor->visited data, it __doesn't know the gender__  of a user. 
+
 [ ![Example Results](https://raw.github.com/paulasmuth/recommendify/master/doc/example.png) ](http://falbala.23loc.com/~paul/recommendify_out_1.html)
 
 full snippet: http://falbala.23loc.com/~paul/recommendify_out_1.html 
 
-These recommendations were calculated from 2,3mb "profile visit"-data (taken from www.talentsuche.de). Initially processing the 120.047 `visitor_id->profile_id` pairs currently takes around half an hour on a single core and creates a 126.64mb hashtable in redis. You can try this for yourself; the complete data and code is in `doc/example.rb` and `doc/example_data.csv`.
+Initially processing the 120.047 `visitor_id->profile_id` pairs currently takes around half an hour on a single core and creates a 126.64mb hashtable in redis. The high memory usage of >100mb for only 5000 items is due to the very long user rows. If you limit the user rows to 100 items (mahout's default) it shrinks to 31mb for the 5k items from example_data.csv. In another real data set with very short user rows (purchase/payment data) it used only 3.4mb for 90k items with very good results. You can try this for yourself; the complete data and code is in `doc/example.rb` and `doc/example_data.csv`. 
 
 
 
