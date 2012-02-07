@@ -157,5 +157,3 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 + optimize sparsematrix memory usage (somehow)
 + make max_row length configurable
 + option: only add items where co-concurreny/appearnce-count > n
-
-
