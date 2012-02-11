@@ -19,7 +19,7 @@ int main(int argc, char **argv){
   int j, similarityFunc = 0;    
   char *itemID;  
   char *redisPrefix;
-  char redisCmd[1024];
+  char redisCmd[1024]; // FIXPAUL: use hiredis format strings
   redisContext *c;
   redisReply *all_items;
   
@@ -79,11 +79,12 @@ int main(int argc, char **argv){
 
 
   /* populate the cc_items array */ 
-  int cc_items_size = all_items->elements * sizeof(struct cc_item);
-  struct cc_item *cc_items = malloc(cc_items_size);
+  int cc_items_size = all_items->elements;  
+  int cc_items_mem = cc_items_size * sizeof(struct cc_item);
+  struct cc_item *cc_items = malloc(cc_items_mem);
 
   if(!cc_items){    
-    printf("cannot allocate memory: %i", cc_items_size);
+    printf("cannot allocate memory: %i", cc_items_mem);
     return 1;
   }
   
@@ -97,7 +98,9 @@ int main(int argc, char **argv){
 
 
   /* get all item data from redis (OPTIMIZE with hmget) */
-
+  for (j = 0; j < cc_items_size; j++){
+    printf("item: %i -> %s\n", j, cc_items[j].item_id);
+  }  
 
 
   /* calculate similarities */
