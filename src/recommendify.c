@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <hiredis/hiredis.h>
 
 #include "version.h" 
@@ -7,9 +8,15 @@
 #include "cosine.c" 
 #include "output.c" 
 
+struct cc_item {         
+  char  item_id[64]; /* FIXPAUL */
+  int   coconcurrency_count;
+  int   total_count;
+  float similarity;  
+};         
 
 int main(int argc, char **argv){
-  int similarityFunc = 0;    
+  int j, similarityFunc = 0;    
   char *itemID;  
   char *redisPrefix;
   char redisCmd[1024];
@@ -43,7 +50,7 @@ int main(int argc, char **argv){
   itemID = argv[3];
 
 
-  /* prevent buffer overflows */ 
+  /* FIXPAUL gprevent buffer overflows */ 
   if(strlen(redisPrefix) > 100)
     return 1; 
 
@@ -62,7 +69,7 @@ int main(int argc, char **argv){
  
 
   /* get all items */  
-  sprintf(redisCmd, "HKEYS %s:items", redisPrefix); 
+  sprintf(redisCmd, "HKEYS %s:items", redisPrefix);  /* fixme: use snprintf */
   printf("redis->exec: %s\n", redisCmd);
 
   all_items = redisCommand(c,redisCmd);
@@ -71,22 +78,47 @@ int main(int argc, char **argv){
     return 1;
 
 
-  /* calculate similarities */
-  if(similarityFunc == 1)
-    calculate_jaccard(c, redisPrefix, itemID, all_items);
+  /* populate the cc_items array */ 
+  int cc_items_size = all_items->elements * sizeof(struct cc_item);
+  struct cc_item *cc_items = malloc(cc_items_size);
 
-  if(similarityFunc == 2)
-    calculate_jaccard(c, redisPrefix, itemID, all_items);
+  if(!cc_items){    
+    printf("cannot allocate memory: %i", cc_items_size);
+    return 1;
+  }
+  
+  for (j = 0; j < all_items->elements; j++){    
+    /* FIXPAUL: buffer overflow: make char_id dynamic and find longest_id for malloc */
+    strcpy(cc_items[j].item_id, all_items->element[j]->str);
+  }
 
   freeReplyObject(all_items);
 
 
+
+  /* get all item data from redis (OPTIMIZE with hmget) */
+
+
+
+  /* calculate similarities */
+  //if(similarityFunc == 1)
+  //  calculate_jaccard(c, redisPrefix, itemID, all_items);
+
+  //if(similarityFunc == 2)
+  //  calculate_jaccard(c, redisPrefix, itemID, all_items);
+
+  
   /* sort items by similarity */
 
 
   /* print the top x items */
 
 
+  free(cc_items);
+
+  printf("bye\n");
+
   return 0;
 }
+
 
