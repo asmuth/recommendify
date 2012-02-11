@@ -10,7 +10,7 @@ int main (int argc, char **argv){
   /* redisReply *reply; */
 
   if(argc < 2) {
-    printf("usage: %s {--version|--jaccard|--cosine} [redis_key] [item_id]\n", argv[0]);
+    printf(USAGE_STRING, argv[0]);
     return 1;
   }
 
@@ -19,10 +19,10 @@ int main (int argc, char **argv){
     return 0;
   }
 
-  if(!strcmp(argv[1], "--jaccard")){ similarityFunc = 1; }
-  if(!strcmp(argv[1], "--cosine")){ similarityFunc = 2; }
+  if(!strcmp(argv[1], "--jaccard")) similarityFunc = 1;
+  if(!strcmp(argv[1], "--cosine")) similarityFunc = 2;
 
-  if(similarityFunc == 0){
+  if(!similarityFunc){
     printf("invalid option: %s\n", argv[1]);
     return 1;
   }

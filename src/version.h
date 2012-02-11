@@ -9,4 +9,9 @@
  "\n" \
  "Copyright © 2012\n" \
  "  Paul Asmuth <paul@paulasmuth.com>\n" 
+
+#define USAGE_STRING "usage: %s " \
+ "{--version|--jaccard|--cosine} " \
+ "[redis_key] [item_id]\n"
+
 #endif
