@@ -17,5 +17,5 @@ task :build_native do
   out_dir = ::File.expand_path("../bin", __FILE__)  
   src_dir = ::File.expand_path("../src", __FILE__)  
   %x{mkdir -p #{out_dir}}
-  %x{g++ -ansi -pedantic-errors -Wall #{src_dir}/recommendify.cpp -o #{out_dir}/recommendify}
+  %x{g++ -ansi -pedantic-errors -Wall #{src_dir}/recommendify.cpp -lhiredis -o #{out_dir}/recommendify}
 end
