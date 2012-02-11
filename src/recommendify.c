@@ -3,28 +3,20 @@
 #include <hiredis/hiredis.h>
 
 #include "version.h" 
+#include "jaccard.c" 
+#include "cosine.c" 
+#include "output.c" 
 
-int print_version(){
-  printf(
-    VERSION_STRING, 
-    VERSION_MAJOR, 
-    VERSION_MINOR, 
-    VERSION_MICRO
-  );
-  return 0;
-}
-
-int print_usage(char *bin){
-  printf(USAGE_STRING, bin);
-  return 1;
-}
 
 int main(int argc, char **argv){
-  int similarityFunc = 0;
+  int similarityFunc = 0;    
+  char *itemID;  
+  char *redisPrefix;
+  char redisCmd[1024];
   redisContext *c;
-  redisReply *reply;
+  redisReply *all_items;
   
-
+  
   /* option parsing */
   if(argc < 2)
     return print_usage(argv[0]);
@@ -47,6 +39,17 @@ int main(int argc, char **argv){
     return 1;
   }
 
+  redisPrefix = argv[2];
+  itemID = argv[3];
+
+
+  /* prevent buffer overflows */ 
+  if(strlen(redisPrefix) > 100)
+    return 1; 
+
+  if(strlen(itemID) > 100)
+    return 1; 
+
   
   /* connect to redis */
   struct timeval timeout = { 1, 500000 }; 
@@ -56,6 +59,32 @@ int main(int argc, char **argv){
     printf("connection to redis failed: %s\n", c->errstr);
     return 1;
   }
+ 
+
+  /* get all items */  
+  sprintf(redisCmd, "HKEYS %s:items", redisPrefix); 
+  printf("redis->exec: %s\n", redisCmd);
+
+  all_items = redisCommand(c,redisCmd);
+
+  if (all_items->type != REDIS_REPLY_ARRAY)
+    return 1;
+
+
+  /* calculate similarities */
+  if(similarityFunc == 1)
+    calculate_jaccard(c, redisPrefix, itemID, all_items);
+
+  if(similarityFunc == 2)
+    calculate_jaccard(c, redisPrefix, itemID, all_items);
+
+  freeReplyObject(all_items);
+
+
+  /* sort items by similarity */
+
+
+  /* print the top x items */
 
 
   return 0;
