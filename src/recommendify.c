@@ -4,33 +4,33 @@
 
 #include "version.h" 
 
-void print_version(){
+int print_version(){
   printf(
     VERSION_STRING, 
     VERSION_MAJOR, 
     VERSION_MINOR, 
     VERSION_MICRO
   );
+  return 0;
 }
 
-void print_usage(char *bin){
+int print_usage(char *bin){
   printf(USAGE_STRING, bin);
+  return 1;
 }
 
 int main(int argc, char **argv){
-  redisContext *c;
   int similarityFunc = 0;
-  /* redisReply *reply; */
+  redisContext *c;
+  redisReply *reply;
+  
 
-  if(argc < 2){
-    print_usage(argv[0]);
-    return 1;
-  }
+  /* option parsing */
+  if(argc < 2)
+    return print_usage(argv[0]);
 
-  if(!strcmp(argv[1], "--version")){
-    print_version();
-    return 0;
-  }
+  if(!strcmp(argv[1], "--version"))
+    return print_version();
 
   if(!strcmp(argv[1], "--jaccard")) 
     similarityFunc = 1;
@@ -47,6 +47,8 @@ int main(int argc, char **argv){
     return 1;
   }
 
+  
+  /* connect to redis */
   struct timeval timeout = { 1, 500000 }; 
   c = redisConnectWithTimeout("127.0.0.2", 6379, timeout); 
 
@@ -54,6 +56,7 @@ int main(int argc, char **argv){
     printf("connection to redis failed: %s\n", c->errstr);
     return 1;
   }
+
 
   return 0;
 }
