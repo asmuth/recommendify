@@ -20,7 +20,11 @@ int main(int argc, char **argv){
   redisContext *c;
   redisReply *all_items;
   redisReply *reply;
+  int cur_batch_size;
+  char* cur_batch;
+  char *iikey;
 
+  int batch_size = 100; /* FIXPAUL: make option */
   int maxItems = 50; /* FIXPAUL: make option */
   
   
@@ -101,25 +105,46 @@ int main(int argc, char **argv){
   freeReplyObject(all_items);
 
 
-  /* get all item data from redis: OPTIMIZE: get in batches with hmget */
-  for (j = 0; j < cc_items_size; j++){
-   
-    /* OPTIMIZE: get in batches with hmget */ 
-    char *iikey = item_item_key(itemID, cc_items[j].item_id);
-    //printf("fnord: %s vs %s -> %s\n", itemID, cc_items[j].item_id, iikey);
-    reply = redisCommand(c,"HGET %s:ccmatrix %s", redisPrefix, iikey);  
-    if(reply->str){
-      cc_items[j].coconcurrency_count = atoi(reply->str);
-    } else {
-      cc_items[j].coconcurrency_count = 0;
+  // batched redis hmgets on the ccmatrix
+  cur_batch = (char *)malloc(((batch_size * (ITEM_ID_SIZE + 4) * 2) + 100) * sizeof(char));
+
+  if(!cur_batch){    
+    printf("cannot allocate memory");
+    return 1;
+  }
+
+  n = cc_items_size;
+  while(n >= 0){
+    cur_batch_size = ((n-1 < batch_size) ? n-1 : batch_size);
+    sprintf(cur_batch, "HMGET %s:ccmatrix ", redisPrefix);
+
+    for(i = 0; i < cur_batch_size; i++){
+      iikey = item_item_key(itemID, cc_items[n-i].item_id);
+
+      strcat(cur_batch, iikey);
+      strcat(cur_batch, " ");
+
+      if(iikey)
+        free(iikey);
+    }    
+
+    redisAppendCommand(c, cur_batch);  
+    redisGetReply(c, (void**)&reply);
+      
+    for(j = 0; j < reply->elements; j++){
+      if(reply->element[j]->str){
+        cc_items[n-j].coconcurrency_count = atoi(reply->element[j]->str);
+      } else {
+        cc_items[n-j].coconcurrency_count = 0;
+      }   
     }
 
     freeReplyObject(reply);
+    n -= batch_size;
+  }
 
-    if(iikey)
-      free(iikey);
+  free(cur_batch);
 
-  }  
 
 
   /* calculate similarities */
