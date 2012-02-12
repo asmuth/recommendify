@@ -31,7 +31,7 @@ module Recommendify::CCMatrix
 
   def delete_item(item_id)    
     Recommendify.redis.hdel(redis_key(:items), item_id)
-    @ccmatrix.send(:k_delall, item_id)
+    ccmatrix.send(:k_delall, item_id)
   end
 
 private
