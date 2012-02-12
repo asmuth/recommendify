@@ -109,7 +109,14 @@ Recommendify keeps an incrementally updated `item x item` matrix, the "co-concur
 
 The maximum number of entries in the co-concurrence and similarity matrix is k(n) = (n^2)-(n/2), it grows O(n^2). However, in a real scenario it is very unlikely that all item<->item combinations appear in a interaction set and we use a sparse matrix which will only use memory for elemtens with a value > 0. The size of the similarity grows O(n). 
 
+### native/fast worker
 
+After you have compiled the native worker, you can pass the `:native => true` option to the input_matrix. This speeds up processing by at least 10x.
+
+```
+cd ~/.rvm/gems/ruby-1.9.3-p0/gems/recommendify-0.2.2/
+bundle exec rake build_native
+```
 
 example
 -------
