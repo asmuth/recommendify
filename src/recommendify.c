@@ -10,19 +10,20 @@
 #include "output.h"
 
 int main(int argc, char **argv){
-  int i, j, n, similarityFunc = 0;    
-  int itemCount = 0;  
+  size_t i, j, n;
+  int similarityFunc = 0;
+  size_t itemCount = 0;
   char *itemID;  
   char *redisPrefix;
   redisContext *c;
   redisReply *all_items;
   redisReply *reply;
-  int cur_batch_size;
+  size_t cur_batch_size;
   char* cur_batch;
   char *iikey;
 
-  int batch_size = 200; /* FIXPAUL: make option */
-  int maxItems = 50; /* FIXPAUL: make option */
+  size_t batch_size = 200; /* FIXPAUL: make option */
+  size_t maxItems = 50; /* FIXPAUL: make option */
   
   
   /* option parsing */

@@ -2,8 +2,8 @@
 
 #include "cc_item.h"
 
-void calculate_jaccard(char const *restrict item_id, int itemCount, struct cc_item *restrict cc_items, int cc_items_size){
-  int j, n;
+void calculate_jaccard(char const *restrict item_id, size_t itemCount, struct cc_item *restrict cc_items, size_t cc_items_size){
+  size_t j, n;
 
   for(j = 0; j < cc_items_size; j++){
     n = cc_items[j].coconcurrency_count;
