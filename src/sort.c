@@ -4,6 +4,14 @@ static size_t lesser(size_t i1, size_t i2){
   return i1 > i2 ? i2 : i1;
 }
 
+/**
+ * \brief Compare two strings in rubyesque manner
+ *
+ * \param str1 First string
+ * \param str2 Second string
+ *
+ * \return Something rubyesque
+ */
 int rb_strcmp(char const *restrict str1, char const *restrict str2) {
   size_t len1 = strlen(str1);
   size_t len2 = strlen(str2);
