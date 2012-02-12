@@ -15,6 +15,26 @@ struct cc_item {
   float similarity;  
 };         
 
+
+// FIXPAUL: I think this reeks...
+char* item_item_key(char *item1, char *item2){
+  //char *key = "fnord";
+  //printf("foo: %s, %s\n", item1, item2);
+  char *key = (char *)malloc(strlen(item1) + strlen(item2) + 1);
+
+  if(!key)
+    return "fnord";
+
+  // FIXPAUL: make shure this does exactly the same as ruby sort  
+  if(strcmp(item1, item2) < 0){
+    sprintf(key, "%s:%s", item1, item2);
+  } else {
+    sprintf(key, "%s:%s", item2, item1);
+  }
+
+  return key;
+}
+
 int main(int argc, char **argv){
   int j, similarityFunc = 0;    
   char *itemID;  
@@ -106,21 +126,25 @@ int main(int argc, char **argv){
     cc_items[j].total_count = atoi(reply->str);    
     freeReplyObject(reply);
 
-    printf(
+    char *iikey = item_item_key(itemID, cc_items[j].item_id);    
+    printf("%s vs %s -> %s\n", itemID, cc_items[j].item_id, iikey);
+    free(iikey);
+
+    /*printf(
       "item: %i -> %s (ccn: %i, ttl: %i) \n", j, 
       cc_items[j].item_id,
       cc_items[j].coconcurrency_count,
       cc_items[j].total_count
-    );
+    );*/
   }  
 
 
   /* calculate similarities */
   //if(similarityFunc == 1)
-  //  calculate_jaccard(c, redisPrefix, itemID, all_items);
+  //  calculate_jaccard(c, redisPrefix, itemID, cc_items);
 
   //if(similarityFunc == 2)
-  //  calculate_jaccard(c, redisPrefix, itemID, all_items);
+  //  calculate_jaccard(c, redisPrefix, itemID, cc_items);
 
   
   /* sort items by similarity */
