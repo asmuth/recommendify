@@ -12,7 +12,6 @@
 #include "output.h"
 
 int main(int argc, char **argv){
-  size_t i, j, n;
   int similarityFunc = 0;
   size_t itemCount = 0;
   char *itemID;  
@@ -97,12 +96,10 @@ int main(int argc, char **argv){
     return EXIT_FAILURE;
   }
   
-  i = 0;
-  for (j = 0; j < all_items->elements/2; j++){                   
-    if(strcmp(itemID, all_items->element[j*2]->str) != 0){      
-      strncpy(cc_items[i].item_id, all_items->element[j*2]->str, ITEM_ID_SIZE);
-      cc_items[i].total_count = atoi(all_items->element[j*2+1]->str);
-      i++;
+  for (size_t i = 0; i < all_items->elements/2; ++i){                   
+    if(strcmp(itemID, all_items->element[i*2]->str) != 0){      
+      strncpy(cc_items[i].item_id, all_items->element[i*2]->str, ITEM_ID_SIZE);
+      cc_items[i].total_count = atoi(all_items->element[i*2+1]->str);
     }
   }
 
@@ -117,13 +114,13 @@ int main(int argc, char **argv){
     return EXIT_FAILURE;
   }
 
-  n = cc_items_size;
-  while(n >= 0){
+  size_t n;
+  for (n = cc_items_size; n >= 0; n -= batch_size) {
     cur_batch_size = ((n-1 < batch_size) ? n-1 : batch_size);
 
     size_t cur_batch_off = 0;
 
-    for(i = 0; i < cur_batch_size; i++) {
+    for (size_t i = 0; i < cur_batch_size; i++) {
       cur_batch_off +=
         item_item_key(cur_batch + cur_batch_off, itemID, cc_items[n-i].item_id);
       cur_batch[cur_batch_off - 1] = ' ';
@@ -132,7 +129,7 @@ int main(int argc, char **argv){
     redisAppendCommand(c, "HMGET %s:ccmatrix %s", redisPrefix, cur_batch);  
     redisGetReply(c, (void**)&reply);
       
-    for(j = 0; j < reply->elements; j++){
+    for (size_t j = 0; j < reply->elements; j++){
       if(reply->element[j]->str){
         cc_items[n-j].coconcurrency_count = atoi(reply->element[j]->str);
       } else {
@@ -141,7 +138,6 @@ int main(int argc, char **argv){
     }
 
     freeReplyObject(reply);
-    n -= batch_size;
   }
 
   free(cur_batch);
@@ -157,8 +153,9 @@ int main(int argc, char **argv){
 
   
   /* find the top x items with simple bubble sort */
-  for(i = 0; i < maxItems - 1; ++i){
-    for (j = 0; j < cc_items_size - i - 1; ++j){
+  for(size_t i = 0; i < maxItems - 1; ++i){
+    n -= batch_size;
+    for (size_t j = 0; j < cc_items_size - i - 1; ++j){
       if (cc_items[j].similarity > cc_items[j + 1].similarity){
         struct cc_item tmp = cc_items[j];
         cc_items[j] = cc_items[j + 1];
@@ -169,9 +166,9 @@ int main(int argc, char **argv){
 
 
   /* print top k items */
-  n = ((cc_items_size < maxItems) ? cc_items_size : maxItems);
-  for(j = 0; j < n; j++){
-    i = cc_items_size-j-1;
+  size_t m = ((cc_items_size < maxItems) ? cc_items_size : maxItems);
+  for(size_t j = 0; j < m; j++){
+    size_t i = cc_items_size-j-1;
     if(cc_items[i].similarity > 0){
       print_item(cc_items + i);      
     }    
