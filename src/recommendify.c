@@ -126,8 +126,16 @@ int main(int argc, char **argv){
     cc_items[j].total_count = atoi(reply->str);    
     freeReplyObject(reply);
 
-    char *iikey = item_item_key(itemID, cc_items[j].item_id);    
-    printf("%s vs %s -> %s\n", itemID, cc_items[j].item_id, iikey);
+    char *iikey = item_item_key(itemID, cc_items[j].item_id);        
+    reply = redisCommand(c,"HGET %s:ccmatrix %s", redisPrefix, iikey);  
+    if(reply->str){
+      printf("res: %s\n", reply->str);
+      cc_items[j].coconcurrency_count = atoi(reply->str);
+    } else {
+      cc_items[j].coconcurrency_count = 0;
+    }
+    
+    freeReplyObject(reply);
     free(iikey);
 
     /*printf(
