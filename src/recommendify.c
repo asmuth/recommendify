@@ -80,7 +80,7 @@ int main(int argc, char **argv){
   
 
   /* populate the cc_items array */ 
-  int cc_items_size = all_items->elements;
+  int cc_items_size = all_items->elements;  
   int cc_items_mem = cc_items_size * sizeof(struct cc_item);
   struct cc_item *cc_items = malloc(cc_items_mem);
 
@@ -102,7 +102,6 @@ int main(int argc, char **argv){
 
   freeReplyObject(all_items);
 
-  int hits = 0;
 
   /* get all item data from redis: OPTIMIZE: get in batches with hmget */
   for (j = 0; j < cc_items_size; j++){
@@ -117,14 +116,10 @@ int main(int argc, char **argv){
     //printf("fnord: %s vs %s -> %s\n", itemID, cc_items[j].item_id, iikey);
     reply = redisCommand(c,"HGET %s:ccmatrix %s", redisPrefix, iikey);  
     if(reply->str){
-      printf("res: %s\n", reply->str);
-      hits += 1;
       cc_items[j].coconcurrency_count = atoi(reply->str);
     } else {
       cc_items[j].coconcurrency_count = 0;
     }
-    
-    i++;
 
     freeReplyObject(reply);
 
@@ -139,27 +134,24 @@ int main(int argc, char **argv){
     );*/
   }  
 
-  printf("item count: %i\n", itemCount);
-  printf("hits: %i\n", hits);
 
   /* calculate similarities */
   if(similarityFunc == 1)
     calculate_jaccard(itemID, itemCount, cc_items, cc_items_size);
 
-  //if(similarityFunc == 2)
-  //  calculate_jaccard(c, redisPrefix, itemID, cc_items);
+  if(similarityFunc == 2)
+    calculate_cosine(itemID, itemCount, cc_items, cc_items_size);
 
   
-  /* sort items by similarity */
+  /* find the top x items */
 
 
-  /* print the top x items */
+  /* print the top x items as json */
 
 
   free(cc_items); 
 
   printf("bye\n");
-
   return 0;
 }
 

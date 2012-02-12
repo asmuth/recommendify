@@ -1,13 +1,20 @@
-void calculate_jaccard(char *item_id, int itemCount, const struct cc_item *cc_items, int cc_items_size){
-  printf("numitems: %i", cc_items_size);
-  /*
-      val = ccmatrix[item1, item2]
-        val.to_f / (item_count(item1)+item_count(item2)-val).to_f
-    */
+void calculate_jaccard(char *item_id, int itemCount, struct cc_item *cc_items, int cc_items_size){
+  int j, n;
 
-  /*int j;
-  printf("calculate_jaccard\n");
-  for (j = 0; j < all_items->elements; j++){
-    printf("%u) %s\n", j, all_items->element[j]->str);
-  }*/
+  for(j = 0; j < cc_items_size; j++){
+    n = cc_items[j].coconcurrency_count;
+    if(n>0){
+      cc_items[j].similarity = (
+        (float)n / (
+          (float)itemCount + 
+          (float)cc_items[j].total_count - 
+          (float)n
+        )
+      );
+      printf("yay: %s -> %f\n", cc_items[j].item_id, cc_items[j].similarity);      
+    } else {
+      cc_items[j].similarity = 0.0;
+    }
+  }  
+
 }
