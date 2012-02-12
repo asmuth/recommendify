@@ -2,26 +2,27 @@ class Recommendify::JaccardInputMatrix < Recommendify::InputMatrix
 
   include Recommendify::CCMatrix
 
-  def initialize(opts={})
-    super(opts)
+  def initialize(opts={})    
+    check_native if opts[:native]
+    super(opts)    
   end
 
   def similarity(item1, item2)
     calculate_jaccard_cached(item1, item2)
   end
 
-  # optimize: get all item-counts and the cc-row with 2 redis hmgets.
-  # optimize: don't return more than sm.max_neighbors items (truncate set while collecting)
   def similarities_for(item1)
-    # todo: optimize native. execute with own redis conn and write top K to stdout
-    # native_ouput = %x{recommendify_native jaccard "#{redis_key}" "#{item1}"}
-    # return native_output.split("\n").map{ |l| l.split(",") }
+    return run_native(item1) if @opts[:native]      
+    calculate_similarities(item1)
+  end
+
+private
+
+  def calculate_similarities(item1)
     (all_items - [item1]).map do |item2|
       [item2, similarity(item1, item2)]
     end
   end
-
-private
 
   def calculate_jaccard_cached(item1, item2)
     val = ccmatrix[item1, item2]
@@ -30,6 +31,24 @@ private
 
   def calculate_jaccard(set1, set2)
     (set1&set2).length.to_f / (set1 + set2).uniq.length.to_f
+  end
+
+  def run_native(item_id)
+    res = %x{#{native_path} --jaccard "#{redis_key}" "#{item_id}"}
+    res.split("\n").map do |line|
+      sim = line.match(/OUT: \(([^\)]*)\) \(([^\)]*)\)/)
+      raise "error: #{res}" unless sim
+      [sim[1], sim[2].to_f]
+    end
+  end
+
+  def check_native
+    return true if ::File.exists?(native_path)
+    raise "recommendify_native not found - you need to run rake build_native first"
+  end
+
+  def native_path
+    ::File.expand_path('../../../bin/recommendify', __FILE__)
   end
 
 end
