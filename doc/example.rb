@@ -11,7 +11,9 @@ class UserRecommender < Recommendify::Base
   #max_neighbors 50
 
   input_matrix :visits, 
-    :similarity_func => :jaccard
+    :similarity_func => :jaccard,
+    :native => true
+
 end
 
 recommender = UserRecommender.new
