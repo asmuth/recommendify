@@ -12,10 +12,6 @@
 #include "iikey.c" 
 
 
-/* 
-  FIXPAUL: MAX_ID_LENGTH = 64
-*/
-
 int main(int argc, char **argv){
   int i, j, n, similarityFunc = 0;    
   int itemCount = 0;  
@@ -96,7 +92,7 @@ int main(int argc, char **argv){
   i = 0;
   for (j = 0; j < all_items->elements/2; j++){                   
     if(strcmp(itemID, all_items->element[j*2]->str) != 0){      
-      strncpy(cc_items[i].item_id, all_items->element[j*2]->str, 64); /* FIXPAUL: MAX_ID_LENGTH */
+      strncpy(cc_items[i].item_id, all_items->element[j*2]->str, ITEM_ID_SIZE);
       cc_items[i].total_count = atoi(all_items->element[j*2+1]->str);
       i++;
     }
