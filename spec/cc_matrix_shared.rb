@@ -51,4 +51,25 @@ share_examples_for Recommendify::CCMatrix do
     @matrix.all_items.should include("wurst")
   end
 
+  it "should delete all item<->item pairs on item deletion" do
+    @matrix.ccmatrix["foo", "fnord"] = 2
+    @matrix.add_set("user123", ["foo", "bar", "fnord"])
+    @matrix.add_set("user456", ["fnord", "blubb"])
+    @matrix.ccmatrix["bar", "foo"].should == 1
+    @matrix.ccmatrix["foo", "fnord"].should == 3
+    @matrix.ccmatrix["blubb", "fnord"].should == 1
+    @matrix.delete_item("fnord")
+    @matrix.ccmatrix["bar", "foo"].should == 1
+    @matrix.ccmatrix["foo", "fnord"].should == 0
+    @matrix.ccmatrix["blubb", "fnord"].should == 0  
+  end
+
+  it "should delete the item count on deletion" do    
+    @matrix.add_set("user123", ["foo", "bar", "fnord"])
+    @matrix.add_set("user456", ["fnord", "blubb"])
+    @matrix.send(:item_count, "fnord").should == 2
+    @matrix.delete_item("fnord")
+    @matrix.send(:item_count, "fnord").should == 0
+  end
+
 end
