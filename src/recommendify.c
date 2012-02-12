@@ -22,7 +22,6 @@ int main(int argc, char **argv){
   redisReply *reply;
   size_t cur_batch_size;
   char* cur_batch;
-  char *iikey;
 
   size_t batch_size = 200; /* FIXPAUL: make option */
   size_t maxItems = 50; /* FIXPAUL: make option */
@@ -122,15 +121,13 @@ int main(int argc, char **argv){
   while(n >= 0){
     cur_batch_size = ((n-1 < batch_size) ? n-1 : batch_size);
 
-    for(i = 0; i < cur_batch_size; i++){
-      iikey = item_item_key(itemID, cc_items[n-i].item_id);
+    size_t cur_batch_off = 0;
 
-      strcat(cur_batch, iikey);
-      strcat(cur_batch, " ");
-
-      if(iikey)
-        free(iikey);
-    }    
+    for(i = 0; i < cur_batch_size; i++) {
+      cur_batch_off +=
+        item_item_key(cur_batch + cur_batch_off, itemID, cc_items[n-i].item_id);
+      cur_batch[cur_batch_off - 1] = ' ';
+    }
 
     redisAppendCommand(c, "HMGET %s:ccmatrix %s", redisPrefix, cur_batch);  
     redisGetReply(c, (void**)&reply);
