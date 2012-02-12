@@ -5,12 +5,14 @@ _Recommendify is a ruby/redis based recommendation engine_  - The recommendation
 
 [ ![Build status - Travis-ci](https://secure.travis-ci.org/paulasmuth/recommendify.png) ](http://travis-ci.org/paulasmuth/recommendify)
 
+---
 
-### use cases
+#### usecases
 
 + __"Users that bought this product also bought..."__ from `user_id--bought-->product_id` pairs
 + __"Users that viewed this video also viewed..."__ from `user_id--viewed-->video_id` pairs
 + __"Users that like this venue also like..."__ from `user_id--likes-->venue_id` pairs
+
 
 
 synopsis
@@ -158,16 +160,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### todo
 
-+ rake benchmark CLASS=MySimilarityMatrix
-+ optimize JaccardInputMatrix
 + implement CosineInputMatrix
-+ implement NativeJaccardInputMatrix (C)
-+ implement NativeCosineInputMatrix (C)
-+ todo: remove item (remove from all matrices)
-+ redis prefix issue
 + forbid ':' and '|' in item_ids
 + recommendify::base no key part issue
-+ optimize sparsematrix memory usage (somehow)
 + make max_row length configurable
-+ option: only add items where co-concurreny/appearnce-count > n
 
