@@ -73,7 +73,7 @@ int main(int argc, char **argv){
 
   if(itemCount == 0){
     printf("item count is zero\n");
-    return 0;
+    return EXIT_SUCCESS;
   }
   
 
@@ -112,7 +112,7 @@ int main(int argc, char **argv){
 
   if(!cur_batch){    
     printf("cannot allocate memory");
-    return 1;
+    return EXIT_FAILURE;
   }
 
   n = cc_items_size;
