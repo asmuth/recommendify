@@ -1,4 +1,4 @@
 recommendify = recommendify.c cosine.c jaccard.c output.c
 
 recommendify: $(recommendify)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $(recommendify) $(LDFLAGS) -lhiredis
+	$(CC) -std=c99 $(CPPFLAGS) $(CFLAGS) -o $@ $(recommendify) $(LDFLAGS) -lhiredis
