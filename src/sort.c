@@ -1,25 +1,24 @@
 #include <string.h>
 
-static int lesser(int i1, int i2){
-  if(i1 > i2){
-    return i2;
-  } else {
-    return i1;
-  }
+static size_t lesser(size_t i1, size_t i2){
+  return i1 > i2 ? i2 : i1;
 }
 
-int rb_strcmp(char *str1, char *str2){
-  long len;
-  int retval;
-  len = lesser(strlen(str1), strlen(str2));
-  retval = memcmp(str1, str2, len);
-  if (retval == 0){
-    if (strlen(str1) == strlen(str2)) {      
+int rb_strcmp(char const *restrict str1, char const *restrict str2) {
+  size_t len1 = strlen(str1);
+  size_t len2 = strlen(str2);
+
+  size_t len = lesser(len1, len2);
+
+  int ret = memcmp(str1, str2, len);
+  if (ret == 0) {
+    if (len1 == len2)
       return 0;
-    }
-    if (strlen(str1) > strlen(str2)) return 1;
-    return -1;
+    else if (len1 > len2)
+      return 1;
+    else
+      return -1;
   }
-  if (retval > 0) return 1;
-  return -1;
+  else
+    return ret > 0 ? 1 : -1;
 }
