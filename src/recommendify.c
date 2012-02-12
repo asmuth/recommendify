@@ -1,6 +1,8 @@
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include <hiredis/hiredis.h>
 
 #include "cc_item.h" 
@@ -28,7 +30,7 @@ int main(int argc, char **argv){
   
   /* option parsing */
   if(argc < 2) {
-    print_usage(argv[0]);
+    print_usage(stderr, argv[0]);
     return EXIT_FAILURE;
   }
 
@@ -44,11 +46,11 @@ int main(int argc, char **argv){
     similarityFunc = 2;
 
   if(!similarityFunc){
-    printf("invalid option: %s\n", argv[1]);
+    fprintf(stderr, "Invalid option: %s\n", argv[1]);
     return EXIT_FAILURE;
   } else if(argc != 4){
-    printf("wrong number of arguments\n");
-    print_usage(argv[0]);
+    fputs("Wrong number of arguments\n", stderr);
+    print_usage(stderr, argv[0]);
     return EXIT_FAILURE;
   }
 
@@ -61,7 +63,7 @@ int main(int argc, char **argv){
   c = redisConnectWithTimeout("127.0.0.2", 6379, timeout); 
 
   if(c->err){
-    printf("connection to redis failed: %s\n", c->errstr);
+    fprintf(stderr, "Connection to redis failed: %s\n", c->errstr);
     return EXIT_FAILURE;
   }
  
@@ -72,7 +74,7 @@ int main(int argc, char **argv){
   freeReplyObject(reply);
 
   if(itemCount == 0){
-    printf("item count is zero\n");
+    fputs("Item count is zero\n", stderr);
     return EXIT_SUCCESS;
   }
   
@@ -85,13 +87,14 @@ int main(int argc, char **argv){
 
 
   /* populate the cc_items array */ 
-  int cc_items_size = all_items->elements / 2;  
-  int cc_items_mem = cc_items_size * sizeof(struct cc_item);
+  size_t cc_items_size = all_items->elements / 2;  
+  size_t cc_items_mem = cc_items_size * sizeof(struct cc_item);
   struct cc_item *cc_items = malloc(cc_items_mem);
   cc_items_size--;
 
   if(!cc_items){    
-    printf("cannot allocate memory: %i", cc_items_mem);
+    fprintf(stderr, "Cannot allocate %lu bytes of memory: %s",
+      cc_items_mem, strerror(errno));
     return EXIT_FAILURE;
   }
   
@@ -111,7 +114,7 @@ int main(int argc, char **argv){
   cur_batch = (char *)malloc(((batch_size * (ITEM_ID_SIZE + 4) * 2) + 100) * sizeof(char));
 
   if(!cur_batch){    
-    printf("cannot allocate memory");
+    perror("Cannot allocate memory");
     return EXIT_FAILURE;
   }
 

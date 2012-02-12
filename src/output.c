@@ -12,8 +12,8 @@ void print_version(){
   );
 }
 
-void print_usage(char const *restrict bin){
-  printf(USAGE_STRING, bin);
+void print_usage(FILE *restrict stream, char const *restrict bin){
+  fprintf(stream, USAGE_STRING, bin);
 }
 
 void print_item(struct cc_item const *restrict item){
