@@ -145,22 +145,22 @@ int main(int argc, char **argv){
 
   
   /* find the top x items - OPTIMIZE: bubble sort is slow => O(n^k) n=cc_items_size, k=maxItems*/
-  for(i = 0; i < 50 - 1; ++i) {
-    for (j = 0; j < cc_items_size - i - 1; ++j) {
-      if (cc_items[j].similarity > cc_items[j + 1].similarity) {
+  for(i = 0; i < 50 - 1; ++i){
+    for (j = 0; j < cc_items_size - i - 1; ++j){
+      if (cc_items[j].similarity > cc_items[j + 1].similarity){
         struct cc_item tmp = cc_items[j];
         cc_items[j] = cc_items[j + 1];
         cc_items[j + 1] = tmp;
       }
     }
-   }
+  }
 
   /* print top k items */
   n = ((cc_items_size < 50) ? cc_items_size : 50);
   for(j = 0; j < n; j++){
     i = cc_items_size-j-1;
     if(cc_items[i].similarity > 0){
-      printf("out: %s -> %f\n", cc_items[i].item_id, cc_items[i].similarity);    
+      print_item(cc_items[i]);      
     }    
   }
 

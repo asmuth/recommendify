@@ -12,3 +12,11 @@ int print_usage(char *bin){
   printf(USAGE_STRING, bin);
   return 1;
 }
+
+void print_item(struct cc_item item){
+  printf(
+    "OUT: (%s) (%.4f)\n", 
+    item.item_id, 
+    item.similarity
+  );
+}

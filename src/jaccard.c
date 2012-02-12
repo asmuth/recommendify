@@ -11,7 +11,6 @@ void calculate_jaccard(char *item_id, int itemCount, struct cc_item *cc_items, i
           (float)n
         )
       );
-      printf("yay: %s -> %f\n", cc_items[j].item_id, cc_items[j].similarity);      
     } else {
       cc_items[j].similarity = 0.0;
     }
