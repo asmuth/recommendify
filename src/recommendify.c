@@ -173,7 +173,7 @@ int main(int argc, char **argv){
   for(j = 0; j < n; j++){
     i = cc_items_size-j-1;
     if(cc_items[i].similarity > 0){
-      print_item(cc_items[i]);      
+      print_item(cc_items + i);      
     }    
   }
 
