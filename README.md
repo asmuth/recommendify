@@ -1,7 +1,9 @@
 recommendify
 ============
 
-Incremental and distributed item-based "Collaborative Filtering" for binary ratings with ruby and redis. In a nutshell: You feed in `user -> item` interactions and it spits out similarity vectors between items ("related items").  __scroll down for a demo...__
+Incremental and distributed item-based "Collaborative Filtering" for binary ratings with ruby and redis. In a nutshell: You feed in `user -> item` interactions and it spits out the similarities between items ("similar items").  __scroll down for a demo...__
+
+It uses a jaccard similarity measure. The worker is implemented in plain ruby and native c+hiredis.
 
 [ ![Build status - Travis-ci](https://secure.travis-ci.org/paulasmuth/recommendify.png) ](http://travis-ci.org/paulasmuth/recommendify)
 
