@@ -111,7 +111,7 @@ int main(int argc, char **argv){
 
 
   // batched redis hmgets on the ccmatrix
-  cur_batch = (char *)malloc(((batch_size * (ITEM_ID_SIZE + 4) * 2) + 100) * sizeof(char));
+  cur_batch = malloc(batch_size * (ITEM_ID_SIZE + 4) * 2);
 
   if(!cur_batch){    
     perror("Cannot allocate memory");
@@ -121,7 +121,6 @@ int main(int argc, char **argv){
   n = cc_items_size;
   while(n >= 0){
     cur_batch_size = ((n-1 < batch_size) ? n-1 : batch_size);
-    sprintf(cur_batch, "HMGET %s:ccmatrix ", redisPrefix);
 
     for(i = 0; i < cur_batch_size; i++){
       iikey = item_item_key(itemID, cc_items[n-i].item_id);
@@ -133,7 +132,7 @@ int main(int argc, char **argv){
         free(iikey);
     }    
 
-    redisAppendCommand(c, cur_batch);  
+    redisAppendCommand(c, "HMGET %s:ccmatrix %s", redisPrefix, cur_batch);  
     redisGetReply(c, (void**)&reply);
       
     for(j = 0; j < reply->elements; j++){
