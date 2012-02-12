@@ -56,17 +56,17 @@ usage
 # of products in "orders" using the jaccard similarity measure.
 class MyRecommender < Recommendify::Base
 
-  # store a maximum of fifty neighbors per item
+  # store only the top fifty neighbors per item
   max_neighbors 50
 
   # define an input data set "order_items". we'll add "order_id->product_id"
   # pairs to this input and use the jaccard coefficient to retrieve a 
   # "customers that ordered item i1 also ordered item i2" statement and apply
   # the result to the item<->item similarity matrix with a weight of 5.0
-  input_matrix :order_items, 
-    :similarity_func => :jaccard,
+  input_matrix :order_items,  
+    # :native => true,
+    :similarity_func => :jaccard,    
     :weight => 5.0
-    # :native => true 
 
 end
 
@@ -78,7 +78,6 @@ recommender = MyRecommender.new
 recommender.order_items.add_set("order1", ["product23", "product65", "productm23"])
 recommender.order_items.add_set("order2", ["product14", "product23"])
 
-
 # Calculate all elements of the similarity matrix
 recommender.process!
 
@@ -86,11 +85,9 @@ recommender.process!
 # use this to avoid re-processing the whole matrix after incremental updates
 recommender.process_item!("product65")
 
-
 # retrieve similar products to "product23"
 recommender.for("item23") 
   => [ <Recommendify::Neighbor item_id:"product65" similarity:0.23>, (...) ]
-
 
 # remove "product23" from the similarity matrix and the input matrices. you should 
 # do this if your items 'expire', since it will speed up the calculation
