@@ -8,62 +8,18 @@
 #include "jaccard.c" 
 #include "cosine.c" 
 #include "output.c" 
+#include "sort.c" 
+#include "iikey.c" 
 
-int lesser(int i1, int i2){
-  if(i1 > i2){
-    return i2;
-  } else {
-    return i1;
-  }
-}
-
-int rb_strcmp(char *str1, char *str2){
-  long len;
-  int retval;
-  len = lesser(strlen(str1), strlen(str2));
-  retval = memcmp(str1, str2, len);
-  if (retval == 0){
-    if (strlen(str1) == strlen(str2)) {      
-      return 0;
-    }
-    if (strlen(str1) > strlen(str2)) return 1;
-    return -1;
-  }
-  if (retval > 0) return 1;
-  return -1;
-}
-
-
-// FIXPAUL: I think this reeks...
-char* item_item_key(char *item1, char *item2){
-  int keylen = strlen(item1) + strlen(item2) + 2;
-  char *key = (char *)malloc(keylen * sizeof(char)); // FIXPAUL
-  if(!key){
-    printf("cannot allocate\n");
-    return 0;
-  }  
-  //char *key = "fnord";
-
-  //printf("foo: %s, %s\n", item1, item2);
-
-
-  // FIXPAUL: make shure this does exactly the same as ruby sort  
-  if(rb_strcmp(item1, item2) <= 0){ /* < or <= ???? */
-    snprintf(key, keylen, "%s:%s", item1, item2);
-  } else {
-    snprintf(key, keylen, "%s:%s", item2, item1);
-  }
-
-  return key;
-}
-
+/* 
+  FIXPAUL: MAX_ID_LENGTH = 64
+*/
 
 int main(int argc, char **argv){
   int i, j, similarityFunc = 0;    
   int itemCount = 0;
   char *itemID;  
   char *redisPrefix;
-  char redisCmd[1024]; // FIXPAUL: use hiredis format strings
   redisContext *c;
   redisReply *all_items;
   redisReply *reply;
@@ -95,14 +51,6 @@ int main(int argc, char **argv){
   itemID = argv[3];
 
 
-  /* FIXPAUL gprevent buffer overflows */ 
-  if(strlen(redisPrefix) > 100)
-    return 1; 
-
-  if(strlen(itemID) > 100)
-    return 1; 
-
-  
   /* connect to redis */
   struct timeval timeout = { 1, 500000 }; 
   c = redisConnectWithTimeout("127.0.0.2", 6379, timeout); 
@@ -114,10 +62,7 @@ int main(int argc, char **argv){
  
 
   /* get all items OPTIMIZE: get total counts */  
-  sprintf(redisCmd, "HKEYS %s:items", redisPrefix);  /* fixme: use snprintf */
-  printf("redis->exec: %s\n", redisCmd); /* fixme use hiredis format string */
-
-  all_items = redisCommand(c,redisCmd);
+  all_items = redisCommand(c,"HKEYS %s:items", redisPrefix);
 
   if(all_items->type != REDIS_REPLY_ARRAY)
     return 1;
@@ -159,9 +104,6 @@ int main(int argc, char **argv){
 
   int hits = 0;
 
-  cc_items_size = 100;
-
-
   /* get all item data from redis: OPTIMIZE: get in batches with hmget */
   for (j = 0; j < cc_items_size; j++){
 
@@ -173,7 +115,6 @@ int main(int argc, char **argv){
     /* OPTIMIZE: get in batches with hmget */ 
     char *iikey = item_item_key(itemID, cc_items[j].item_id);
     //printf("fnord: %s vs %s -> %s\n", itemID, cc_items[j].item_id, iikey);
-    //iikey = "fnord";
     reply = redisCommand(c,"HGET %s:ccmatrix %s", redisPrefix, iikey);  
     if(reply->str){
       printf("res: %s\n", reply->str);
@@ -215,7 +156,7 @@ int main(int argc, char **argv){
   /* print the top x items */
 
 
-  free(cc_items);
+  free(cc_items); 
 
   printf("bye\n");
 
