@@ -15,21 +15,49 @@ struct cc_item {
   float similarity;  
 };         
 
+int lesser(int i1, int i2){
+  if(i1 > i2){
+    return i2;
+  } else {
+    return i1;
+  }
+}
+
+int rb_strcmp(char *str1, char *str2){
+  long len;
+  int retval;
+  len = lesser(strlen(str1), strlen(str2));
+  retval = memcmp(str1, str2, len);
+  if (retval == 0){
+    if (strlen(str1) == strlen(str2)) {      
+      return 0;
+    }
+    if (strlen(str1) > strlen(str2)) return 1;
+    return -1;
+  }
+  if (retval > 0) return 1;
+  return -1;
+}
+
 
 // FIXPAUL: I think this reeks...
 char* item_item_key(char *item1, char *item2){
+  int keylen = strlen(item1) + strlen(item2) + 2;
+  char *key = (char *)malloc(keylen * sizeof(char)); // FIXPAUL
+  if(!key){
+    printf("cannot allocate\n");
+    return 0;
+  }  
   //char *key = "fnord";
-  //printf("foo: %s, %s\n", item1, item2);
-  char *key = (char *)malloc(strlen(item1) + strlen(item2) + 1);
 
-  if(!key)
-    return "fnord";
+  //printf("foo: %s, %s\n", item1, item2);
+
 
   // FIXPAUL: make shure this does exactly the same as ruby sort  
-  if(strcmp(item1, item2) < 0){
-    sprintf(key, "%s:%s", item1, item2);
+  if(rb_strcmp(item1, item2) < 0){ /* < or <= ???? */
+    snprintf(key, keylen, "%s:%s", item1, item2);
   } else {
-    sprintf(key, "%s:%s", item2, item1);
+    snprintf(key, keylen, "%s:%s", item2, item1);
   }
 
   return key;
@@ -116,28 +144,34 @@ int main(int argc, char **argv){
 
   freeReplyObject(all_items);
 
+  int hits = 0;
 
-
-  /* get all item data from redis (OPTIMIZE with hmget) */
+  /* get all item data from redis: OPTIMIZE: get in batches with hmget */
   for (j = 0; j < cc_items_size; j++){
 
     /* get total count (OPTIMIZE: get with the first hkeys/hgetall) */
-    reply = redisCommand(c,"HGET %s:items %s", redisPrefix, cc_items[j].item_id);  
+    /*reply = redisCommand(c,"HGET %s:items %s", redisPrefix, cc_items[j].item_id);  
     cc_items[j].total_count = atoi(reply->str);    
-    freeReplyObject(reply);
-
-    char *iikey = item_item_key(itemID, cc_items[j].item_id);        
+    freeReplyObject(reply);*/
+ 
+    /* OPTIMIZE: get in batches with hmget */ 
+    char *iikey = item_item_key(itemID, cc_items[j].item_id);
+    //printf("fnord: %s vs %s -> %s\n", itemID, cc_items[j].item_id, iikey);
+    //iikey = "fnord";
     reply = redisCommand(c,"HGET %s:ccmatrix %s", redisPrefix, iikey);  
     if(reply->str){
       printf("res: %s\n", reply->str);
+      hits += 1;
       cc_items[j].coconcurrency_count = atoi(reply->str);
     } else {
       cc_items[j].coconcurrency_count = 0;
     }
     
     freeReplyObject(reply);
-    free(iikey);
+    if(iikey)
+      free(iikey);
 
+    
     /*printf(
       "item: %i -> %s (ccn: %i, ttl: %i) \n", j, 
       cc_items[j].item_id,
@@ -146,7 +180,7 @@ int main(int argc, char **argv){
     );*/
   }  
 
-
+  printf("hits: %i\n", hits);
   /* calculate similarities */
   //if(similarityFunc == 1)
   //  calculate_jaccard(c, redisPrefix, itemID, cc_items);
