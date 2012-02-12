@@ -19,7 +19,7 @@ synopsis
 Your input data (the so called interaction-sets) should look like this:
 
 ```
-# FORMAT A: products grouped by buyer_id
+# FORMAT A: user bought products (select buyerid, productid from sales group_by buyerid)
 [user23] product5 produt42 product17
 [user42] product8 produt16 product5
 
@@ -35,10 +35,10 @@ The output data will look like this:
 ```
 # similar products based on co-concurrent buys
 product5 => product17 (0.78), product8 (0.43), product42 (0.31)
-product17 => product5 (0.78), product8 (0.43), product42 (0.31)
+product17 => product5 (0.36), product8 (0.21), product42 (0.18)
 
 # similar videos based on co-concurrent views
-video19 => video3 (0.32), video6 (0.21), video42 (0.08)
+video19 => video3 (0.93), video6 (0.56), video42 (0.34)
 video42 => video19 (0.32), video3 (0.21), video6 (0.08)
 ```
 
@@ -51,42 +51,30 @@ usage
 ```ruby
 
 # Our similarity matrix, we calculate the similarity via co-concurrence 
-# of items in "orders" and the co-concurrence of items in user-likes using 
-# two `item x item` matrices and the jaccard/cosine similarity measure.
+# of products in "orders" using the jaccard similarity measure.
 class MyRecommender < Recommendify::Base
 
   # store a maximum of fifty neighbors per item
   max_neighbors 50
 
-  # define an input data set "order_item_s". we'll add "order_id->item_id"
+  # define an input data set "order_items". we'll add "order_id->product_id"
   # pairs to this input and use the jaccard coefficient to retrieve a 
   # "customers that ordered item i1 also ordered item i2" statement and apply
   # the result to the item<->item similarity matrix with a weight of 5.0
   input_matrix :order_items, 
     :similarity_func => :jaccard,
     :weight => 5.0
-  
-  # define an input data set "like_item_s". we'll add "user_id->item_id"
-  # pairs to this input and use a cosine-based similarity measure to retrieve 
-  # a "users that liked item i1 also liked item i2" statement and apply the 
-  # result to the item<->item similarity matrix with a weight of 1.0
-  input_matrix :like_items
-    :similarity_func => :cosine,
-    :weight => 1.0
+    # :native => true 
 
 end
 
 recommender = MyRecommender.new
 
-# add `order_id->item_id` interactions to the order_item_sim input
+# add `order_id->product_id` interactions to the order_item_sim input
 # you can add data incrementally and call RecommendedItem.process! to update
 # the similarity matrix at any time.
-recommender.order_items.add_set("order1", ["item23", "item65", "item23"])
-recommender.order_items.add_set("order2", ["item14", "item23"])
-
-# add `user_id->item_id` interactions to the like_time_sim input
-recommender.like_items.add_set("user1", ["item23", "item65", "item23"])
-recommender.like_items.add_set("user2", ["item14", "item23"])
+recommender.order_items.add_set("order1", ["product23", "product65", "productm23"])
+recommender.order_items.add_set("order2", ["product14", "product23"])
 
 
 # Calculate all elements of the similarity matrix
@@ -94,17 +82,17 @@ recommender.process!
 
 # ...or calculate a specific row of the similarity matrix (a specific item)
 # use this to avoid re-processing the whole matrix after incremental updates
-recommender.process_item!("item65")
+recommender.process_item!("product65")
 
 
-# retrieve similar items to "item23"
+# retrieve similar products to "product23"
 recommender.for("item23") 
-  => [ <Recommendify::Neighbor item_id:"item65" similarity:0.23>, (...) ]
+  => [ <Recommendify::Neighbor item_id:"product65" similarity:0.23>, (...) ]
 
 
-# remove "item23" from the similarity matrix and the input matrices. you should 
+# remove "product23" from the similarity matrix and the input matrices. you should 
 # do this if your items 'expire', since it will speed up the calculation
-recommender.delete_item!("item23") 
+recommender.delete_item!("product23") 
 ```
 
 ### how it works
