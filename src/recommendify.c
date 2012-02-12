@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <hiredis/hiredis.h>
 
+#include "output.h"
+
 struct cc_item {         
   char  item_id[64]; /* FIXPAUL */
   int   coconcurrency_count;
@@ -41,11 +43,15 @@ int main(int argc, char **argv){
   
   
   /* option parsing */
-  if(argc < 2)
-    return print_usage(argv[0]);
+  if(argc < 2) {
+    print_usage(argv[0]);
+    return EXIT_FAILURE;
+  }
 
-  if(!strcmp(argv[1], "--version"))
-    return print_version();
+  if(!strcmp(argv[1], "--version")) {
+    print_version();
+    return EXIT_SUCCESS;
+  }
 
   else if(!strcmp(argv[1], "--jaccard")) 
     similarityFunc = 1;
