@@ -3,11 +3,6 @@
 #include <stdlib.h>
 #include <hiredis/hiredis.h>
 
-#include "version.h" 
-#include "jaccard.c" 
-#include "cosine.c" 
-#include "output.c" 
-
 struct cc_item {         
   char  item_id[64]; /* FIXPAUL */
   int   coconcurrency_count;

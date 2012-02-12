@@ -1,3 +1,7 @@
+#include <stdio.h>
+
+#include "version.h"
+
 int print_version(){
   printf(
     VERSION_STRING, 
