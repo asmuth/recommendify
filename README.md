@@ -10,26 +10,43 @@ _Recommendify is a ruby/redis based recommendation engine_  - The recommendation
 
 + __"Users that bought this product also bought..."__ from `user_id--bought-->product_id` pairs
 + __"Users that viewed this video also viewed..."__ from `user_id--viewed-->video_id` pairs
-+ __"Users that follow this person also follow..."__ from `user_id--followed-->user_id` pairs
++ __"Users that like this venue also like..."__ from `user_id--likes-->venue_id` pairs
 
+
+synopsis
+--------
+
+Your input data (the so called interaction-sets) should look like this:
+
+```
+# FORMAT A: products grouped by buyer_id
+[user23] product5 produt42 product17
+[user42] product8 produt16 product5
+
+# FORMAT B: user watched video (this can be transformed to the upper representation with a map/reduce)
+user3 -> video3
+user6 -> video19
+user3 -> video6
+user1 -> video42
+```
+
+The output data will look like this:
+
+```
+# similar products based on co-concurrent buys
+product5 => product17 (0.78), product8 (0.43), product42 (0.31)
+product17 => product5 (0.78), product8 (0.43), product42 (0.31)
+
+# similar videos based on co-concurrent views
+video19 => video3 (0.32), video6 (0.21), video42 (0.08)
+video42 => video19 (0.32), video3 (0.21), video6 (0.08)
+```
+
+You can add new interaction-sets to the processor incrementally, but the similarities for changed items have to be re-processed after new interactions were added. You can either re-process all items (recommender.process!) from time to time or keep track of the updates and only process the changed items (recommender.process_item!)
 
 
 usage
 -----
-
-Your data should look like this:
-
-```
-# which items are frequently bought togehter?
-[order23] product5 produt42 product17
-[order42] product8 produt16 product32
-
-# which users are frequently watched/followed together?
-[user4] user9 user11 user12
-[user9] user6 user8 user11
-```
-
-You can add new interaction-sets to the processor incrementally, but the similarity matrix has to be manually re-processed after new interactions were added to any of the applied processors. However, the processing happens on-line and you can keep track of the changed items so you only have to re-calculate the changed rows of the matrix.
 
 ```ruby
 
@@ -158,3 +175,4 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 + optimize sparsematrix memory usage (somehow)
 + make max_row length configurable
 + option: only add items where co-concurreny/appearnce-count > n
+
