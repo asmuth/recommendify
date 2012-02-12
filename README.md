@@ -86,7 +86,7 @@ recommender.for("item23")
 
 # remove "item23" from the similarity matrix and the input matrices. you should 
 # do this if your items 'expire', since it will speed up the calculation
-recommender.remove_item!("item23") 
+recommender.delete_item!("item23") 
 ```
 
 ### how it works
