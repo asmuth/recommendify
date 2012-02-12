@@ -1,8 +1,4 @@
-#include <string.h>
-
-static size_t lesser(size_t i1, size_t i2){
-  return i1 > i2 ? i2 : i1;
-}
+#include <stddef.h>
 
 /**
  * \brief Compare two strings in rubyesque manner
@@ -13,20 +9,22 @@ static size_t lesser(size_t i1, size_t i2){
  * \return Something rubyesque
  */
 int rb_strcmp(char const *restrict str1, char const *restrict str2) {
-  size_t len1 = strlen(str1);
-  size_t len2 = strlen(str2);
-
-  size_t len = lesser(len1, len2);
-
-  int ret = memcmp(str1, str2, len);
-  if (ret == 0) {
-    if (len1 == len2)
-      return 0;
-    else if (len1 > len2)
+  for (size_t i = 0;; ++i) {
+    if (!str1[i]) {
+      if (!str2[i])
+        /* Strings of equal length */
+        return 0;
+      else
+        /* str1 shorter */
+        return -1;
+    }
+    else if (!str2[i]) {
+      /* str1 longer */
       return 1;
-    else
-      return -1;
+    }
+    else if (str1[i] != str2[i]) {
+      /* First unequal pair */
+      return str1[i] > str2[i] ? 1 : -1;
+    }
   }
-  else
-    return ret > 0 ? 1 : -1;
 }
