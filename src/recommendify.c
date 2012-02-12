@@ -4,6 +4,7 @@
 #include <hiredis/hiredis.h>
 
 #include "cc_item.h" 
+#include "iikey.h"
 #include "output.h"
 
 int main(int argc, char **argv){
