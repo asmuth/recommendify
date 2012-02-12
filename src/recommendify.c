@@ -11,12 +11,13 @@
 #include "sort.c" 
 #include "iikey.c" 
 
+
 /* 
   FIXPAUL: MAX_ID_LENGTH = 64
 */
 
 int main(int argc, char **argv){
-  int i, j, similarityFunc = 0;    
+  int i, j, n, similarityFunc = 0;    
   int itemCount = 0;
   char *itemID;  
   char *redisPrefix;
@@ -143,15 +144,27 @@ int main(int argc, char **argv){
     calculate_cosine(itemID, itemCount, cc_items, cc_items_size);
 
   
-  /* find the top x items */
+  /* find the top x items - OPTIMIZE: bubble sort is slow => O(n^k) n=cc_items_size, k=maxItems*/
+  for(i = 0; i < 50 - 1; ++i) {
+    for (j = 0; j < cc_items_size - i - 1; ++j) {
+      if (cc_items[j].similarity > cc_items[j + 1].similarity) {
+        struct cc_item tmp = cc_items[j];
+        cc_items[j] = cc_items[j + 1];
+        cc_items[j + 1] = tmp;
+      }
+    }
+   }
 
-
-  /* print the top x items as json */
-
+  /* print top k items */
+  n = ((cc_items_size < 50) ? cc_items_size : 50);
+  for(j = 0; j < n; j++){
+    i = cc_items_size-j-1;
+    if(cc_items[i].similarity > 0){
+      printf("out: %s -> %f\n", cc_items[i].item_id, cc_items[i].similarity);    
+    }    
+  }
 
   free(cc_items); 
-
-  printf("bye\n");
   return 0;
 }
 
