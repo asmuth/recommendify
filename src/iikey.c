@@ -4,13 +4,13 @@
 
 #include "sort.h"
 
-char* item_item_key(char *item1, char *item2){
-  int keylen = strlen(item1) + strlen(item2) + 2;
-  char *key = (char *)malloc(keylen * sizeof(char));
+char *item_item_key(char const *restrict item1, char const *restrict item2){
+  size_t keylen = strlen(item1) + strlen(item2) + 2;
+  char *key = malloc(keylen * sizeof(char));
 
   if(!key){
-    printf("cannot allocate\n");
-    return 0;
+    perror("malloc");
+    return (char *) 0;
   }  
 
   // FIXPAUL: make shure this does exactly the same as ruby sort  
