@@ -1,3 +1,5 @@
+#include <string.h>
+
 int lesser(int i1, int i2){
   if(i1 > i2){
     return i2;
