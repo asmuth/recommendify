@@ -22,6 +22,7 @@ int main(int argc, char **argv){
   char redisCmd[1024]; // FIXPAUL: use hiredis format strings
   redisContext *c;
   redisReply *all_items;
+  redisReply *reply;
   
   
   /* option parsing */
@@ -68,9 +69,9 @@ int main(int argc, char **argv){
   }
  
 
-  /* get all items */  
+  /* get all items OPTIMIZE: get total counts */  
   sprintf(redisCmd, "HKEYS %s:items", redisPrefix);  /* fixme: use snprintf */
-  printf("redis->exec: %s\n", redisCmd);
+  printf("redis->exec: %s\n", redisCmd); /* fixme use hiredis format string */
 
   all_items = redisCommand(c,redisCmd);
 
@@ -88,7 +89,7 @@ int main(int argc, char **argv){
     return 1;
   }
   
-  for (j = 0; j < all_items->elements; j++){    
+  for (j = 0; j < all_items->elements; j++){      
     /* FIXPAUL: buffer overflow: make char_id dynamic and find longest_id for malloc */
     strcpy(cc_items[j].item_id, all_items->element[j]->str);
   }
@@ -99,7 +100,18 @@ int main(int argc, char **argv){
 
   /* get all item data from redis (OPTIMIZE with hmget) */
   for (j = 0; j < cc_items_size; j++){
-    printf("item: %i -> %s\n", j, cc_items[j].item_id);
+
+    /* get total count (OPTIMIZE: get with the first hkeys/hgetall) */
+    reply = redisCommand(c,"HGET %s:items %s", redisPrefix, cc_items[j].item_id);  
+    cc_items[j].total_count = atoi(reply->str);    
+    freeReplyObject(reply);
+
+    printf(
+      "item: %i -> %s (ccn: %i, ttl: %i) \n", j, 
+      cc_items[j].item_id,
+      cc_items[j].coconcurrency_count,
+      cc_items[j].total_count
+    );
   }  
 
 
