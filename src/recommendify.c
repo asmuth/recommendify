@@ -64,14 +64,7 @@ int main(int argc, char **argv){
   }
  
 
-  /* get all items OPTIMIZE: get total counts */  
-  all_items = redisCommand(c,"HKEYS %s:items", redisPrefix);
-
-  if(all_items->type != REDIS_REPLY_ARRAY)
-    return 1;
-
-
-  /* get item count (OPTIMIZE: get with the first hkeys/hgetall) */
+  /* get item count */
   reply = redisCommand(c,"HGET %s:items %s", redisPrefix, itemID);    
   itemCount = atoi(reply->str);    
   freeReplyObject(reply);
@@ -82,11 +75,17 @@ int main(int argc, char **argv){
   }
   
 
+  /* get all items_ids and the total counts */ 
+  all_items = redisCommand(c,"HGETALL %s:items", redisPrefix);
+
+  if(all_items->type != REDIS_REPLY_ARRAY)
+    return 1;
+
+
   /* populate the cc_items array */ 
-  int cc_items_size = all_items->elements;  
+  int cc_items_size = all_items->elements / 2;  
   int cc_items_mem = cc_items_size * sizeof(struct cc_item);
   struct cc_item *cc_items = malloc(cc_items_mem);
-
   cc_items_size--;
 
   if(!cc_items){    
@@ -95,12 +94,12 @@ int main(int argc, char **argv){
   }
   
   i = 0;
-  for (j = 0; j < all_items->elements; j++){          
-    if(strcmp(itemID, all_items->element[j]->str) != 0){
-      /* FIXPAUL: make char_id dynamic and find longest_id for malloc */
-      strncpy(cc_items[i].item_id, all_items->element[j]->str, 64);  
+  for (j = 0; j < all_items->elements/2; j++){                   
+    if(strcmp(itemID, all_items->element[j*2]->str) != 0){      
+      strncpy(cc_items[i].item_id, all_items->element[j*2]->str, 64); /* FIXPAUL: MAX_ID_LENGTH */
+      cc_items[i].total_count = atoi(all_items->element[j*2+1]->str);
       i++;
-    }    
+    }
   }
 
   freeReplyObject(all_items);
@@ -108,12 +107,7 @@ int main(int argc, char **argv){
 
   /* get all item data from redis: OPTIMIZE: get in batches with hmget */
   for (j = 0; j < cc_items_size; j++){
-
-    /* get total count (OPTIMIZE: get with the first hkeys/hgetall) */
-    reply = redisCommand(c,"HGET %s:items %s", redisPrefix, cc_items[j].item_id);      
-    cc_items[j].total_count = atoi(reply->str);    
-    freeReplyObject(reply);
-    
+   
     /* OPTIMIZE: get in batches with hmget */ 
     char *iikey = item_item_key(itemID, cc_items[j].item_id);
     //printf("fnord: %s vs %s -> %s\n", itemID, cc_items[j].item_id, iikey);
