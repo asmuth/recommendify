@@ -1,22 +1,23 @@
 recommendify
 ============
 
-Incremental and distributed item-based "Collaborative Filtering" for binary ratings with ruby and redis. In a nutshell: You feed in `user -> item` interactions and it spits out similarity vectors between items ("related items").  __scroll down for a demo...__
+_Recommendify is a ruby/redis based recommendation engine_  - The recommendations can be updated/processed incrementally and on multiple hosts. The worker is implemented in plain ruby and native C. 
 
 [ ![Build status - Travis-ci](https://secure.travis-ci.org/paulasmuth/recommendify.png) ](http://travis-ci.org/paulasmuth/recommendify)
 
 
 ### use cases
 
-+ "Users that bought this product also bought...". 
-+ "Users that viewed this video also viewed...". 
-+ "Users that follow this person also follow...". 
++ __"Users that bought this product also bought..."__ from `user_id--bought-->product_id` pairs
++ __"Users that viewed this video also viewed..."__ from `user_id--viewed-->video_id` pairs
++ __"Users that follow this person also follow..."__ from `user_id--followed-->user_id` pairs
+
 
 
 usage
 -----
 
-Your data should look something like this:
+Your data should look like this:
 
 ```
 # which items are frequently bought togehter?
@@ -91,7 +92,7 @@ recommender.delete_item!("item23")
 
 ### how it works
 
-Recommendify keeps an incrementally updated `item x item` matrix, the "co-concurrency matrix". This matrix stores the number of times that a combination of two items has appeared in an interaction/preferrence set. The co-concurrence counts are processed with a similarity measure to retrieve another `item x item` similarity matrix, which is used to find the N most similar items for each item. This approach was described by Miranda, Alipio et al. [1]
+Recommendify keeps an incrementally updated `item x item` matrix, the "co-concurrency matrix". This matrix stores the number of times that a combination of two items has appeared in an interaction/preferrence set. The co-concurrence counts are processed with a jaccard similarity measure to retrieve another `item x item` similarity matrix, which is used to find the N most similar items for each item. This is also called "Item-based Collaborative Filtering with binary ratings" (see Miranda, Alipio et al. [1])
 
 1. Group the input user->item pairs by user-id and store them into interaction sets
 2. For each item<->item combination in the interaction set increment the respective element in the co-concurrence matrix
