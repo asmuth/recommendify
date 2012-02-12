@@ -1,3 +1,6 @@
+#ifndef CC_ITEM_H
+#define CC_ITEM_H
+
 #define ITEM_ID_SIZE 64
 
 struct cc_item {         
@@ -6,3 +9,5 @@ struct cc_item {
   int   total_count;
   float similarity;  
 };         
+
+#endif
