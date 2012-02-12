@@ -3,3 +3,7 @@ doxygen/
 
 # Binary
 recommendify
+
+# Hidden files
+.*
+!.gitignore
