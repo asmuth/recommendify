@@ -77,4 +77,10 @@ class Recommendify::Base
     similarity_matrix.commit_item!(item_id)
   end
 
+  def delete_item!(item_id)
+    input_matrices.map do |k,m|
+      m.delete_item(item_id)
+    end
+  end
+
 end

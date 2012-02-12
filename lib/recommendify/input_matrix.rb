@@ -44,4 +44,9 @@ class Recommendify::InputMatrix
     raise "implemented in subclass"
   end
 
+  # delete item_id from the matrix
+  def delete_item(item_id)
+    raise "implemented in subclass"
+  end
+
 end

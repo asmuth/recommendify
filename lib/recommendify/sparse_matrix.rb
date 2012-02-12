@@ -42,4 +42,12 @@ private
     Recommendify.redis.hincrby(redis_key, key, 1)
   end
 
+  # OPTIMIZE: use scripting/lua in redis 2.6
+  def k_delall(key)
+    Recommendify.redis.hkeys(redis_key).each do |iikey|
+      next unless iikey.split(":").include?(key)
+      Recommendify.redis.hdel(redis_key, iikey)
+    end
+  end
+
 end

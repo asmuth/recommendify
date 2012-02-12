@@ -160,12 +160,12 @@ describe Recommendify::Base do
 
   describe "delete_item!" do
 
-    it "should call delete_item! on each input_matrix" do
+    it "should call delete_item on each input_matrix" do
       Recommendify::Base.input_matrix(:myfirstinput, :similarity_func => :jaccard)
       Recommendify::Base.input_matrix(:mysecondinput, :similarity_func => :jaccard)
       sm = Recommendify::Base.new
-      sm.myfirstinput.should_receive(:similarities_for).with("fnorditem")
-      sm.mysecondinput.should_receive(:similarities_for).with("fnorditem")
+      sm.myfirstinput.should_receive(:delete_item).with("fnorditem")
+      sm.mysecondinput.should_receive(:delete_item).with("fnorditem")
       sm.delete_item!("fnorditem")
     end
 
