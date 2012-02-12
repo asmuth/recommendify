@@ -1,9 +1,23 @@
 #include <hiredis/hiredis.h>
 
-void calculate_jaccard(redisContext *restrict c, char const *restrict redisPrefix, char const *restrict item_id, redisReply *restrict all_items){
-  int j;
-  printf("calculate_jaccard\n");
-  for (j = 0; j < all_items->elements; j++){
-    printf("%u) %s\n", j, all_items->element[j]->str);
-  }
+#include "cc_item.h"
+
+void calculate_jaccard(char const *restrict item_id, int itemCount, struct cc_item *restrict cc_items, int cc_items_size){
+  int j, n;
+
+  for(j = 0; j < cc_items_size; j++){
+    n = cc_items[j].coconcurrency_count;
+    if(n>0){
+      cc_items[j].similarity = (
+        (float)n / (
+          (float)itemCount + 
+          (float)cc_items[j].total_count - 
+          (float)n
+        )
+      );
+    } else {
+      cc_items[j].similarity = 0.0;
+    }
+  }  
+
 }

@@ -14,3 +14,11 @@ void print_version(){
 void print_usage(char const *restrict bin){
   printf(USAGE_STRING, bin);
 }
+
+void print_item(struct cc_item item){
+  printf(
+    "OUT: (%s) (%.4f)\n", 
+    item.item_id, 
+    item.similarity
+  );
+}
