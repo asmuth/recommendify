@@ -11,6 +11,6 @@ void print_version(){
   );
 }
 
-void print_usage(char const *bin){
+void print_usage(char const *restrict bin){
   printf(USAGE_STRING, bin);
 }
