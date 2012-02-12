@@ -34,11 +34,11 @@ int main(int argc, char **argv){
 
   if(!similarityFunc){
     printf("invalid option: %s\n", argv[1]);
-    return 1;
+    return EXIT_FAILURE;
   } else if(argc != 4){
     printf("wrong number of arguments\n");
     print_usage(argv[0]);
-    return 1;
+    return EXIT_FAILURE;
   }
 
   redisPrefix = argv[2];
@@ -47,10 +47,10 @@ int main(int argc, char **argv){
 
   /* FIXPAUL gprevent buffer overflows */ 
   if(strlen(redisPrefix) > 100)
-    return 1; 
+    return EXIT_FAILURE;
 
   if(strlen(itemID) > 100)
-    return 1; 
+    return EXIT_FAILURE;
 
   
   /* connect to redis */
@@ -59,7 +59,7 @@ int main(int argc, char **argv){
 
   if(c->err){
     printf("connection to redis failed: %s\n", c->errstr);
-    return 1;
+    return EXIT_FAILURE;
   }
  
 
@@ -70,7 +70,7 @@ int main(int argc, char **argv){
   all_items = redisCommand(c,redisCmd);
 
   if (all_items->type != REDIS_REPLY_ARRAY)
-    return 1;
+    return EXIT_FAILURE;
 
 
   /* populate the cc_items array */ 
@@ -80,7 +80,7 @@ int main(int argc, char **argv){
 
   if(!cc_items){    
     printf("cannot allocate memory: %i", cc_items_mem);
-    return 1;
+    return EXIT_FAILURE;
   }
   
   for (j = 0; j < all_items->elements; j++){    
@@ -116,7 +116,7 @@ int main(int argc, char **argv){
 
   printf("bye\n");
 
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 
