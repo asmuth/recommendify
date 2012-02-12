@@ -26,10 +26,10 @@ int main(int argc, char **argv){
   if(!strcmp(argv[1], "--version"))
     return print_version();
 
-  if(!strcmp(argv[1], "--jaccard")) 
+  else if(!strcmp(argv[1], "--jaccard")) 
     similarityFunc = 1;
 
-  if(!strcmp(argv[1], "--cosine"))  
+  else if(!strcmp(argv[1], "--cosine"))  
     similarityFunc = 2;
 
   if(!similarityFunc){
