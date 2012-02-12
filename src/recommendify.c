@@ -4,7 +4,9 @@
 #include <hiredis/hiredis.h>
 
 #include "cc_item.h" 
+#include "cosine.h"
 #include "iikey.h"
+#include "jaccard.h"
 #include "output.h"
 
 int main(int argc, char **argv){
