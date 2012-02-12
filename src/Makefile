@@ -1,4 +1,13 @@
-recommendify = recommendify.c cosine.c jaccard.c output.c
+CPPFLAGS ?= -pedantic-errors -Wall
+CFLAGS   ?= -pipe
 
-recommendify: $(recommendify)
-	$(CC) -std=c99 $(CPPFLAGS) $(CFLAGS) -o $@ $(recommendify) $(LDFLAGS) -lhiredis
+CPPFLAGS += -std=c99
+LDFLAGS  += -lhiredis
+
+recommendify: recommendify.c cosine.c jaccard.c output.c
+
+%: %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^
+
+.c:
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $>
