@@ -1,5 +1,5 @@
 CPPFLAGS ?= -pedantic-errors -Wall
-CFLAGS   ?= -pipe
+CFLAGS   ?= -pipe -O2
 
 CPPFLAGS += -std=c99
 LDFLAGS  += -lhiredis
