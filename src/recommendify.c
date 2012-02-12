@@ -18,12 +18,14 @@
 
 int main(int argc, char **argv){
   int i, j, n, similarityFunc = 0;    
-  int itemCount = 0;
+  int itemCount = 0;  
   char *itemID;  
   char *redisPrefix;
   redisContext *c;
   redisReply *all_items;
   redisReply *reply;
+
+  int maxItems = 50; /* FIXPAUL: make option */
   
   
   /* option parsing */
@@ -127,12 +129,6 @@ int main(int argc, char **argv){
     if(iikey)
       free(iikey);
 
-    /*printf(
-      "item: %i -> %s (ccn: %i, ttl: %i) \n", j, 
-      cc_items[j].item_id,
-      cc_items[j].coconcurrency_count,
-      cc_items[j].total_count
-    );*/
   }  
 
 
@@ -144,8 +140,8 @@ int main(int argc, char **argv){
     calculate_cosine(itemID, itemCount, cc_items, cc_items_size);
 
   
-  /* find the top x items - OPTIMIZE: bubble sort is slow => O(n^k) n=cc_items_size, k=maxItems*/
-  for(i = 0; i < 50 - 1; ++i){
+  /* find the top x items with simple bubble sort */
+  for(i = 0; i < maxItems - 1; ++i){
     for (j = 0; j < cc_items_size - i - 1; ++j){
       if (cc_items[j].similarity > cc_items[j + 1].similarity){
         struct cc_item tmp = cc_items[j];
@@ -155,14 +151,16 @@ int main(int argc, char **argv){
     }
   }
 
+
   /* print top k items */
-  n = ((cc_items_size < 50) ? cc_items_size : 50);
+  n = ((cc_items_size < maxItems) ? cc_items_size : maxItems);
   for(j = 0; j < n; j++){
     i = cc_items_size-j-1;
     if(cc_items[i].similarity > 0){
       print_item(cc_items[i]);      
     }    
   }
+
 
   free(cc_items); 
   return 0;
