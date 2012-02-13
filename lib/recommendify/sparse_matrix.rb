@@ -43,9 +43,9 @@ private
   end
 
   # OPTIMIZE: use scripting/lua in redis 2.6
-  def k_delall(key)
+  def k_delall(*keys)
     Recommendify.redis.hkeys(redis_key).each do |iikey|
-      next unless iikey.split(":").include?(key)
+      next unless (iikey.split(":") & keys).size > 0
       Recommendify.redis.hdel(redis_key, iikey)
     end
   end

@@ -1,97 +1,102 @@
 recommendify
 ============
 
-Incremental and distributed item-based "Collaborative Filtering" for binary ratings with ruby and redis. In a nutshell: You feed in `user -> item` interactions and it spits out similarity vectors between items ("related items").  __scroll down for a demo...__
+_Recommendify is a ruby/redis based recommendation engine_  - The recommendations can be updated/processed incrementally and on multiple hosts. The worker is implemented in plain ruby and native C. 
 
 [ ![Build status - Travis-ci](https://secure.travis-ci.org/paulasmuth/recommendify.png) ](http://travis-ci.org/paulasmuth/recommendify)
 
+---
 
-### use cases
+#### usecases
 
-+ "Users that bought this product also bought...". 
-+ "Users that viewed this video also viewed...". 
-+ "Users that follow this person also follow...". 
++ __"Users that bought this product also bought..."__ from `user_id--bought-->product_id` pairs
++ __"Users that viewed this video also viewed..."__ from `user_id--viewed-->video_id` pairs
++ __"Users that like this venue also like..."__ from `user_id--likes-->venue_id` pairs
+
+
+
+synopsis
+--------
+
+Your input data (the so called interaction-sets) should look like this:
+
+```
+# FORMAT A: user bought products (select buyerid, productid from sales group_by buyerid)
+[user23] product5 produt42 product17
+[user42] product8 produt16 product5
+
+# FORMAT B: user watched video (this can be transformed to the upper representation with a map/reduce)
+user3 -> video3
+user6 -> video19
+user3 -> video6
+user1 -> video42
+```
+
+The output data will look like this:
+
+```
+# similar products based on co-concurrent buys
+product5 => product17 (0.78), product8 (0.43), product42 (0.31)
+product17 => product5 (0.36), product8 (0.21), product42 (0.18)
+
+# similar videos based on co-concurrent views
+video19 => video3 (0.93), video6 (0.56), video42 (0.34)
+video42 => video19 (0.32), video3 (0.21), video6 (0.08)
+```
+
+You can add new interaction-sets to the processor incrementally, but the similarities for changed items have to be re-processed after new interactions were added. You can either re-process all items (recommender.process!) from time to time or keep track of the updates and only process the changed items (recommender.process_item!)
 
 
 usage
 -----
 
-Your data should look something like this:
-
-```
-# which items are frequently bought togehter?
-[order23] product5 produt42 product17
-[order42] product8 produt16 product32
-
-# which users are frequently watched/followed together?
-[user4] user9 user11 user12
-[user9] user6 user8 user11
-```
-
-You can add new interaction-sets to the processor incrementally, but the similarity matrix has to be manually re-processed after new interactions were added to any of the applied processors. However, the processing happens on-line and you can keep track of the changed items so you only have to re-calculate the changed rows of the matrix.
-
 ```ruby
 
 # Our similarity matrix, we calculate the similarity via co-concurrence 
-# of items in "orders" and the co-concurrence of items in user-likes using 
-# two `item x item` matrices and the jaccard/cosine similarity measure.
+# of products in "orders" using the jaccard similarity measure.
 class MyRecommender < Recommendify::Base
 
-  # store a maximum of fifty neighbors per item
+  # store only the top fifty neighbors per item
   max_neighbors 50
 
-  # define an input data set "order_item_s". we'll add "order_id->item_id"
+  # define an input data set "order_items". we'll add "order_id->product_id"
   # pairs to this input and use the jaccard coefficient to retrieve a 
   # "customers that ordered item i1 also ordered item i2" statement and apply
   # the result to the item<->item similarity matrix with a weight of 5.0
-  input_matrix :order_items, 
-    :similarity_func => :jaccard,
+  input_matrix :order_items,  
+    # :native => true,
+    :similarity_func => :jaccard,    
     :weight => 5.0
-  
-  # define an input data set "like_item_s". we'll add "user_id->item_id"
-  # pairs to this input and use a cosine-based similarity measure to retrieve 
-  # a "users that liked item i1 also liked item i2" statement and apply the 
-  # result to the item<->item similarity matrix with a weight of 1.0
-  input_matrix :like_items
-    :similarity_func => :cosine,
-    :weight => 1.0
 
 end
 
 recommender = MyRecommender.new
 
-# add `order_id->item_id` interactions to the order_item_sim input
+# add `order_id->product_id` interactions to the order_item_sim input
 # you can add data incrementally and call RecommendedItem.process! to update
 # the similarity matrix at any time.
-recommender.order_items.add_set("order1", ["item23", "item65", "item23"])
-recommender.order_items.add_set("order2", ["item14", "item23"])
-
-# add `user_id->item_id` interactions to the like_time_sim input
-recommender.like_items.add_set("user1", ["item23", "item65", "item23"])
-recommender.like_items.add_set("user2", ["item14", "item23"])
-
+recommender.order_items.add_set("order1", ["product23", "product65", "productm23"])
+recommender.order_items.add_set("order2", ["product14", "product23"])
 
 # Calculate all elements of the similarity matrix
 recommender.process!
 
 # ...or calculate a specific row of the similarity matrix (a specific item)
 # use this to avoid re-processing the whole matrix after incremental updates
-recommender.process_item!("item65")
+recommender.process_item!("product65")
 
-
-# retrieve similar items to "item23"
+# retrieve similar products to "product23"
 recommender.for("item23") 
-  => [ <Recommendify::Neighbor item_id:"item65" similarity:0.23>, (...) ]
+  => [ <Recommendify::Neighbor item_id:"product65" similarity:0.23>, (...) ]
 
-
-# remove "item23" from the similarity matrix and the input matrices. you should 
+# remove "product23" from the similarity matrix and the input matrices. you should 
 # do this if your items 'expire', since it will speed up the calculation
-recommender.delete_item!("item23") 
+recommender.delete_item!("product23") 
 ```
 
 ### how it works
 
-Recommendify keeps an incrementally updated `item x item` matrix, the "co-concurrency matrix". This matrix stores the number of times that a combination of two items has appeared in an interaction/preferrence set. The co-concurrence counts are processed with a similarity measure to retrieve another `item x item` similarity matrix, which is used to find the N most similar items for each item. This approach was described by Miranda, Alipio et al. [1]
+Recommendify keeps an incrementally updated `item x item` matrix, the "co-concurrency matrix". This matrix stores the number of times that a combination of two items has appeared in an interaction/preferrence set. The co-concurrence counts are processed with a jaccard similarity measure to retrieve another `item x item` similarity matrix, which is used to find the N most similar items for each item. This is also called "Item-based Collaborative Filtering with binary ratings" (see Miranda, Alipio et al. [1])
 
 1. Group the input user->item pairs by user-id and store them into interaction sets
 2. For each item<->item combination in the interaction set increment the respective element in the co-concurrence matrix
@@ -103,7 +108,14 @@ Recommendify keeps an incrementally updated `item x item` matrix, the "co-concur
 
 The maximum number of entries in the co-concurrence and similarity matrix is k(n) = (n^2)-(n/2), it grows O(n^2). However, in a real scenario it is very unlikely that all item<->item combinations appear in a interaction set and we use a sparse matrix which will only use memory for elemtens with a value > 0. The size of the similarity grows O(n). 
 
+### native/fast worker
 
+After you have compiled the native worker, you can pass the `:native => true` option to the input_matrix. This speeds up processing by at least 10x.
+
+```
+cd ~/.rvm/gems/ruby-1.9.3-p0/gems/recommendify-0.2.2/
+bundle exec rake build_native
+```
 
 example
 -------
@@ -145,15 +157,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### todo
 
-+ rake benchmark CLASS=MySimilarityMatrix
-+ optimize JaccardInputMatrix
 + implement CosineInputMatrix
-+ implement NativeJaccardInputMatrix (C)
-+ implement NativeCosineInputMatrix (C)
-+ todo: remove item (remove from all matrices)
-+ redis prefix issue
 + forbid ':' and '|' in item_ids
 + recommendify::base no key part issue
-+ optimize sparsematrix memory usage (somehow)
 + make max_row length configurable
-+ option: only add items where co-concurreny/appearnce-count > n
+
