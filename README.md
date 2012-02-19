@@ -23,7 +23,7 @@ Your input data (the so called interaction-sets) should look like this:
 ```
 # FORMAT A: user bought products (select buyerid, productid from sales group_by buyerid)
 [user23] product5 product42 product17
-[user42] product8 produt16 product5
+[user42] product8 product16 product5
 
 # FORMAT B: user watched video (this can be transformed to the upper representation with a map/reduce)
 user3 -> video3
