@@ -15,5 +15,5 @@ task :native => "bin/recommendify"
 
 desc "Compile the native client"
 file "bin/recommendify" => FileList['src/*.c'] do |t|
-  sh "gcc -pedantic-errors -Wall -std=c99 -lhiredis -o #{t.name} #{t.prerequisites.join(' ')}"
+  %x{gcc -pedantic-errors -Wall -std=c99 -lhiredis -o #{t.name} #{t.prerequisites.join(' ')}}
 end
