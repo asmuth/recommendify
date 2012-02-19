@@ -11,11 +11,9 @@ task :default => "spec"
 desc "Generate documentation"
 task YARD::Rake::YardocTask.new
 
+task :native => "bin/recommendify"
 
 desc "Compile the native client"
-task :build_native do
-  out_dir = ::File.expand_path("../bin", __FILE__)  
-  src_dir = ::File.expand_path("../src", __FILE__)  
-  %x{mkdir -p #{out_dir}}
-  %x{gcc -Wall #{src_dir}/recommendify.c -lhiredis -o #{out_dir}/recommendify}
+file "bin/recommendify" => FileList['src/*.c'] do |t|
+  sh "gcc -pedantic-errors -Wall -std=c99 -lhiredis -o #{t.name} #{t.prerequisites.join(' ')}"
 end
