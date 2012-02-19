@@ -59,9 +59,9 @@ int main(int argc, char **argv){
   /* connect to redis */
   struct timeval timeout = { 1, 500000 }; 
   c = redisConnectWithTimeout("127.0.0.2", 6379, timeout); 
-
-  if(c->err){
-    fprintf(stderr, "Connection to redis failed: %s\n", c->errstr);
+  if (!c || c->err) {
+    fprintf(stderr, "Connection to redis failed: %s\n",
+      c ? c->errstr : "Broken by design");
     return EXIT_FAILURE;
   }
  
