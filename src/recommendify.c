@@ -12,8 +12,6 @@
 #include "jaccard.h"
 #include "output.h"
 
-#define PARAM_OFFSET 2
-
 int main(int argc, char **argv){
   int similarityFunc = 0;
   size_t itemCount = 0;
@@ -39,7 +37,11 @@ int main(int argc, char **argv){
   }
 
 	int argi;
-	for (argi = 1; argi < argc - PARAM_OFFSET; ++argi) {
+	for (argi = 1; argi < argc; ++argi) {
+		/* Break on first non-option argument */
+		if (argv[argi][0] != '-')
+			break;
+
 		if (!strcmp(argv[argi], "--version")) {
 			print_version();
 			return EXIT_SUCCESS;
@@ -50,7 +52,7 @@ int main(int argc, char **argv){
 			similarityFunc = 2;
 
 		else if (!strcmp(argv[argi], "--host")) {
-			if (argi + 1 < argc - PARAM_OFFSET) {
+			if (argi + 1 < argc) {
 				fputs("--host requires a host name as parameter", stderr);
 				return EXIT_FAILURE;
 			}
@@ -59,7 +61,7 @@ int main(int argc, char **argv){
 		}
 
 		else if (!strcmp(argv[argi], "--port")) {
-			if (argi + 1 < argc - PARAM_OFFSET) {
+			if (argi + 1 < argc) {
 				fputs("--port requires a port number as parameter", stderr);
 				return EXIT_FAILURE;
 			}
@@ -89,6 +91,11 @@ int main(int argc, char **argv){
 			fprintf(stderr, "Invalid option: %s\n", argv[argi]);
 			return EXIT_FAILURE;
 		}
+	}
+
+	if (argi > argc - 2) {
+		print_usage(stderr, argv[0]);
+		return EXIT_FAILURE;
 	}
 
 	if (!similarityFunc) {
