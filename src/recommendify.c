@@ -80,9 +80,14 @@ int main(int argc, char **argv){
 			redisPort = port;
 		}
 
+		else if (!strcmp(argv[argi], "--help")) {
+			print_usage(stdout, argv[0]);
+			return EXIT_SUCCESS;
+		}
+
 		else {
-				fprintf(stderr, "Invalid option: %s\n", argv[argi]);
-				return EXIT_FAILURE;
+			fprintf(stderr, "Invalid option: %s\n", argv[argi]);
+			return EXIT_FAILURE;
 		}
 	}
 
