@@ -86,6 +86,11 @@ int main(int argc, char **argv){
 		}
 	}
 
+	if (!similarityFunc) {
+		fputs("No similarity function specified\n", stderr);
+		return EXIT_FAILURE;
+	}
+
   redisPrefix = argv[argi + 1];
   itemID = argv[argi + 2];
 
