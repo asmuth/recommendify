@@ -133,6 +133,11 @@ describe Recommendify::Base do
       sm.similarity_matrix.should_receive(:[]).with("fnorditem").and_return({:fooitem => 0.4, :baritem => 1.5})
       sm.for("fnorditem").length.should == 2
     end
+    
+    it "should not throw exception for non existing items" do
+      sm = Recommendify::Base.new
+      sm.for("not_existing_item").length.should == 0
+    end
 
     it "should retrieve the n-most similar neighbors as Recommendify::Neighbor objects" do
       sm = Recommendify::Base.new
