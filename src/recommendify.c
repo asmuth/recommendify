@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -11,6 +12,8 @@
 #include "jaccard.h"
 #include "output.h"
 
+#define PARAM_OFFSET 2
+
 int main(int argc, char **argv){
   int similarityFunc = 0;
   size_t itemCount = 0;
@@ -22,6 +25,9 @@ int main(int argc, char **argv){
   size_t cur_batch_size;
   char* cur_batch;
 
+	char const *redisHost = "127.0.0.1";
+	unsigned short redisPort = 6379;
+
   size_t batch_size = 200; /* FIXPAUL: make option */
   size_t maxItems = 50; /* FIXPAUL: make option */
   
@@ -32,33 +38,61 @@ int main(int argc, char **argv){
     return EXIT_FAILURE;
   }
 
-  if(!strcmp(argv[1], "--version")) {
-    print_version();
-    return EXIT_SUCCESS;
-  }
+	int argi;
+	for (argi = 1; argi < argc - PARAM_OFFSET; ++argi) {
+		if (!strcmp(argv[argi], "--version")) {
+			print_version();
+			return EXIT_SUCCESS;
+		}
+		else if (!strcmp(argv[argi], "--jaccard"))
+			similarityFunc = 1;
+		else if (!strcmp(argv[argi], "--cosine"))
+			similarityFunc = 2;
 
-  else if(!strcmp(argv[1], "--jaccard")) 
-    similarityFunc = 1;
+		else if (!strcmp(argv[argi], "--host")) {
+			if (argi + 1 < argc - PARAM_OFFSET) {
+				fputs("--host requires a host name as parameter", stderr);
+				return EXIT_FAILURE;
+			}
 
-  else if(!strcmp(argv[1], "--cosine"))  
-    similarityFunc = 2;
+			redisHost = argv[++argi];
+		}
 
-  if(!similarityFunc){
-    fprintf(stderr, "Invalid option: %s\n", argv[1]);
-    return EXIT_FAILURE;
-  } else if(argc != 4){
-    fputs("Wrong number of arguments\n", stderr);
-    print_usage(stderr, argv[0]);
-    return EXIT_FAILURE;
-  }
+		else if (!strcmp(argv[argi], "--port")) {
+			if (argi + 1 < argc - PARAM_OFFSET) {
+				fputs("--port requires a port number as parameter", stderr);
+				return EXIT_FAILURE;
+			}
 
-  redisPrefix = argv[2];
-  itemID = argv[3];
+			errno = 0;
+			unsigned long port = strtoul(argv[++argi], NULL, 0);
+			if (errno) {
+				fprintf(stderr, "Invalid port number %s: %s\n",
+					argv[argi], strerror(errno));
+				return EXIT_FAILURE;
+			}
+
+			if (port > USHRT_MAX) {
+				fprintf(stderr, "Port number %lu out of range\n", port);
+				return EXIT_FAILURE;
+			}
+
+			redisPort = port;
+		}
+
+		else {
+				fprintf(stderr, "Invalid option: %s\n", argv[argi]);
+				return EXIT_FAILURE;
+		}
+	}
+
+  redisPrefix = argv[argi + 1];
+  itemID = argv[argi + 2];
 
 
   /* connect to redis */
   struct timeval timeout = { 1, 500000 }; 
-  c = redisConnectWithTimeout("127.0.0.2", 6379, timeout); 
+  c = redisConnectWithTimeout(redisHost, redisPort, timeout); 
   if (!c || c->err) {
     fprintf(stderr, "Connection to redis failed: %s\n",
       c ? c->errstr : "Broken by design");
