@@ -44,6 +44,7 @@ class Recommendify::SimilarityMatrix
   # use activesupport's orderedhash?
   def retrieve_item(item_id)
     data = Recommendify.redis.hget(redis_key, item_id)
+    return {} if data.nil?
     Hash[data.split("|").map{ |i| (k,s=i.split(":")) && [k,s.to_f] }]
   end
 
