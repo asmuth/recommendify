@@ -14,8 +14,5 @@ task YARD::Rake::YardocTask.new
 
 desc "Compile the native client"
 task :build_native do
-  out_dir = ::File.expand_path("../bin", __FILE__)  
-  src_dir = ::File.expand_path("../src", __FILE__)  
-  %x{mkdir -p #{out_dir}}
-  %x{gcc -Wall #{src_dir}/recommendify.c -lhiredis -o #{out_dir}/recommendify}
+  exec "cd ext && ruby extconf.rb && make"
 end

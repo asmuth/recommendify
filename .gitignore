@@ -1,2 +1,4 @@
 bin/
+*.gem
 Gemfile.lock
+ext/Makefile

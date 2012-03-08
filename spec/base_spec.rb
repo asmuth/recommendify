@@ -4,8 +4,8 @@ describe Recommendify::Base do
 
   before(:each) do
     flush_redis!
-    Recommendify::Base.class_variable_set(:@@max_neighbors, nil)
-    Recommendify::Base.class_variable_set(:@@input_matrices, {})
+    Recommendify::Base.send(:class_variable_set, :@@max_neighbors, nil)
+    Recommendify::Base.send(:class_variable_set, :@@input_matrices, {})
   end
 
   describe "configuration" do
@@ -24,7 +24,7 @@ describe Recommendify::Base do
 
     it "should add an input_matrix by 'key'" do
       Recommendify::Base.input_matrix(:myinput, :similarity_func => :jaccard)
-      Recommendify::Base.class_variable_get(:@@input_matrices).keys.should == [:myinput]
+      Recommendify::Base.send(:class_variable_get, :@@input_matrices).keys.should == [:myinput]
     end
 
     it "should retrieve an input_matrix on a new instance" do
