@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <hiredis/hiredis.h>
 
-#include "version.h" 
+#include "version.h"
 #include "cc_item.h" 
 #include "jaccard.c" 
 #include "cosine.c" 
@@ -27,7 +27,11 @@ int main(int argc, char **argv){
   int batch_size = 200; /* FIXPAUL: make option */
   int maxItems = 50; /* FIXPAUL: make option */
   
-  
+  struct {
+    char  host[1024];
+    int   port;
+  } redis_addr;
+
   /* option parsing */
   if(argc < 2)
     return print_usage(argv[0]);
@@ -44,7 +48,7 @@ int main(int argc, char **argv){
   if(!similarityFunc){
     printf("invalid option: %s\n", argv[1]);
     return 1;
-  } else if(argc != 4){
+  } else if(argc < 4 || argc > 5){
     printf("wrong number of arguments\n");
     print_usage(argv[0]);
     return 1;
@@ -52,17 +56,35 @@ int main(int argc, char **argv){
 
   redisPrefix = argv[2];
   itemID = argv[3];
+  redis_addr.host[0] = 0;
 
+  /* configure redis location */
+  if(argc > 4){
+    char* has_port = strchr(argv[4], ':');
+    if(has_port){
+      strncpy(redis_addr.host, argv[4], strlen(argv[4]) - strlen(has_port));
+      redis_addr.host[strlen(argv[4]) - strlen(has_port)] = 0;
+      redis_addr.port = atoi(has_port + 1);
+    } else {
+      strncpy(redis_addr.host, argv[4], sizeof(redis_addr.host));
+    }
+  }
+
+  /* default redis location */
+  if(strlen(redis_addr.host) == 0)
+    strcpy(redis_addr.host, "localhost");
+
+  if(!redis_addr.port)
+    redis_addr.port = 6379;
 
   /* connect to redis */
   struct timeval timeout = { 1, 500000 }; 
-  c = redisConnectWithTimeout("127.0.0.2", 6379, timeout); 
+  c = redisConnectWithTimeout(redis_addr.host, redis_addr.port, timeout);
 
   if(c->err){
     printf("connection to redis failed: %s\n", c->errstr);
     return 1;
   }
- 
 
   /* get item count */
   reply = redisCommand(c,"HGET %s:items %s", redisPrefix, itemID);    
