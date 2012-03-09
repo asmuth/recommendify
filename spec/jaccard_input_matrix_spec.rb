@@ -56,6 +56,9 @@ describe Recommendify::JaccardInputMatrix do
   end
 
   it "should call run_native when the native option was passed" do
+    Recommendify::JaccardInputMatrix.class_eval do
+      def check_native; true; end
+    end
     matrix = Recommendify::JaccardInputMatrix.new(
       :redis_prefix => "recommendify-test", 
       :native => true,
