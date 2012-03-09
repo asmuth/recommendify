@@ -8,6 +8,7 @@ module Recommendify::CCMatrix
   end
 
   def add_set(set_id, item_ids)
+    # FIXPAUL: forbid | and : in item_ids
     item_ids.each do |item_id|
       item_count_incr(item_id)
     end
