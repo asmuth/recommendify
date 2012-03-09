@@ -34,7 +34,7 @@ private
   end
 
   def run_native(item_id)
-    res = %x{#{native_path} --jaccard "#{redis_key}" "#{item_id}"}
+    res = %x{#{native_path} --jaccard "#{redis_key}" "#{item_id}" "#{redis_url}"}
     res.split("\n").map do |line|
       sim = line.match(/OUT: \(([^\)]*)\) \(([^\)]*)\)/)
       raise "error: #{res}" unless sim
@@ -49,6 +49,10 @@ private
 
   def native_path
     ::File.expand_path('../../../bin/recommendify', __FILE__)
+  end
+
+  def redis_url
+    Recommendify.redis.client.location
   end
 
 end

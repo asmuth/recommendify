@@ -55,6 +55,20 @@ describe Recommendify::JaccardInputMatrix do
     res.should include ["fnord", 0.4]
   end
 
+  it "should call run_native when the native option was passed" do
+    matrix = Recommendify::JaccardInputMatrix.new(
+      :redis_prefix => "recommendify-test", 
+      :native => true,
+      :key => "mymatrix"
+    )
+    matrix.should_receive(:run_native).with("fnord").and_return(true)
+    matrix.similarities_for("fnord")
+  end
+
+  it "should return the correct redis url" do
+    @matrix.send(:redis_url).should == "127.0.0.1:6379"
+  end
+
 private
 
   def add_two_item_test_data!(matrix)
