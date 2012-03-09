@@ -29,7 +29,11 @@ int main(int argc, char **argv){
   size_t batch_size = 200; /* FIXPAUL: make option */
   size_t maxItems = 50; /* FIXPAUL: make option */
   
-  
+  struct {
+    char  host[1024];
+    int   port;
+  } redis_addr;
+
   /* option parsing */
   if(argc < 2) {
     print_usage(stderr, argv[0]);
@@ -106,6 +110,8 @@ int main(int argc, char **argv){
   redisPrefix = argv[argi + 1];
   itemID = argv[argi + 2];
 
+  if(!redis_addr.port)
+    redis_addr.port = 6379;
 
   /* connect to redis */
   struct timeval timeout = { 1, 500000 }; 
@@ -115,7 +121,6 @@ int main(int argc, char **argv){
       c ? c->errstr : "Broken by design");
     return EXIT_FAILURE;
   }
- 
 
   /* get item count */
   reply = redisCommand(c,"HGET %s:items %s", redisPrefix, itemID);    
