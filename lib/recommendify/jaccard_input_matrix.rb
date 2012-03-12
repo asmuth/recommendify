@@ -38,9 +38,12 @@ private
     raise "error: dirty exit (#{$?})" if $? != 0
     res.split("\n").map do |line|
       sim = line.match(/OUT: \(([^\)]*)\) \(([^\)]*)\)/)
-      raise "error: #{res}" if !sim && !(res||"").include?('exit:')
-      [sim[1], sim[2].to_f]
-    end
+      unless sim
+        raise "error: #{res}" unless (res||"").include?('exit:')
+      else
+        [sim[1], sim[2].to_f]
+      end
+    end.compact
   end
 
   def check_native
