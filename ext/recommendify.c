@@ -57,6 +57,7 @@ int main(int argc, char **argv){
   redisPrefix = argv[2];
   itemID = argv[3];
   redis_addr.host[0] = 0;
+  redis_addr.port = 0;
 
   /* configure redis location */
   if(argc > 4){
