@@ -88,8 +88,6 @@ describe Recommendify::SimilarityMatrix do
       @matrix["item_fnord"].should == {"item_blubb" => 0.6, "item_foo" => 0.4}
     end
 
-    it "should not call split on nil when retrieving a non-existent item (return an empty array)"
-
   end
 
 end
