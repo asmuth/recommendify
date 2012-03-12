@@ -19,11 +19,10 @@ module Recommendify::CCMatrix
   end
 
   def add_single(set_id, item_id, other_item_ids)
-  # todo: add single item to set after set was added (incrementally)
-  #   item_count_incr(item_id)
-  #   other_item_ids.each do |other_item|
-  #     @ccmatrix.incr(item_id, other_idem)
-  #   end
+    item_count_incr(item_id)
+    other_item_ids.each do |other_item|
+      @ccmatrix.incr(item_id, other_item)
+    end
   end
 
   def all_items
