@@ -3,7 +3,7 @@ $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = "recommendify"
-  s.version     = "0.3.1"
+  s.version     = "0.3.2"
   s.date        = Date.today.to_s
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Paul Asmuth"]
@@ -12,11 +12,11 @@ Gem::Specification.new do |s|
   s.summary     = %q{ruby/redis based recommendation engine (collaborative filtering)}
   s.description = %q{Recommendify is a distributed, incremental item-based recommendation engine for binary input ratings. It's based on ruby and redis and uses an approach called "Collaborative Filtering"}
   s.licenses    = ["MIT"]
-  
+
   s.extensions = ['ext/extconf.rb']
 
   s.add_dependency "redis", ">= 2.2.2"
-  
+
   s.add_development_dependency "rspec", "~> 2.8.0"
 
   s.files         = `git ls-files`.split("\n") - [".gitignore", ".rspec", ".travis.yml"]
