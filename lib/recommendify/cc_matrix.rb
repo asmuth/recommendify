@@ -21,7 +21,7 @@ module Recommendify::CCMatrix
   def add_single(set_id, item_id, other_item_ids)
     item_count_incr(item_id)
     other_item_ids.each do |other_item|
-      @ccmatrix.incr(item_id, other_item)
+      ccmatrix.incr(item_id, other_item)
     end
   end
 
