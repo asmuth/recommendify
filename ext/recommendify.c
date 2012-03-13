@@ -122,9 +122,16 @@ int main(int argc, char **argv){
     return EXIT_FAILURE;
   }
 
+
   /* get item count */
   reply = redisCommand(c,"HGET %s:items %s", redisPrefix, itemID);    
-  itemCount = atoi(reply->str);    
+
+  if(reply->str){
+    itemCount = atoi(reply->str);
+  } else {
+    itemCount = 0;
+  }
+
   freeReplyObject(reply);
 
   if(itemCount == 0){

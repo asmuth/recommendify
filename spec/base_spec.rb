@@ -161,6 +161,11 @@ describe Recommendify::Base do
       sm.for("fnorditem").should == []
     end
 
+    it "should not call split on nil when retrieving a non-existent item (return an empty array)" do
+      sm = Recommendify::Base.new
+      sm.for("NONEXISTENT").should == []
+    end
+
   end
 
   describe "delete_item!" do

@@ -2,9 +2,9 @@ class Recommendify::JaccardInputMatrix < Recommendify::InputMatrix
 
   include Recommendify::CCMatrix
 
-  def initialize(opts={})    
+  def initialize(opts={})
     check_native if opts[:native]
-    super(opts)    
+    super(opts)
   end
 
   def similarity(item1, item2)
@@ -12,7 +12,7 @@ class Recommendify::JaccardInputMatrix < Recommendify::InputMatrix
   end
 
   def similarities_for(item1)
-    return run_native(item1) if @opts[:native]      
+    return run_native(item1) if @opts[:native]
     calculate_similarities(item1)
   end
 
@@ -35,11 +35,15 @@ private
 
   def run_native(item_id)
     res = %x{#{native_path} --jaccard "#{redis_key}" "#{item_id}" "#{redis_url}"}
+    raise "error: dirty exit (#{$?})" if $? != 0
     res.split("\n").map do |line|
       sim = line.match(/OUT: \(([^\)]*)\) \(([^\)]*)\)/)
-      raise "error: #{res}" unless sim
-      [sim[1], sim[2].to_f]
-    end
+      unless sim
+        raise "error: #{res}" unless (res||"").include?('exit:')
+      else
+        [sim[1], sim[2].to_f]
+      end
+    end.compact
   end
 
   def check_native

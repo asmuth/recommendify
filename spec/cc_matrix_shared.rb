@@ -19,8 +19,22 @@ share_examples_for Recommendify::CCMatrix do
     @matrix.ccmatrix["foo", "fnord"].should == 1    
   end
 
-  it "should increment all item<->item paris on single item addition"
-  it "should increment the item count on single item addition"
+  it "should increment all item<->item paris on single item addition" do
+    @matrix.ccmatrix["bar", "fnord"] = 2
+    @matrix.add_single("user123", "fnord", ["foo", "bar"])
+    @matrix.ccmatrix["bar", "fnord"].should == 3
+    @matrix.ccmatrix["foo", "fnord"].should == 1   
+  end
+
+  it "should increment the item count on single item addition" do
+    @matrix.send(:item_count_incr, "fnordfnord")
+    @matrix.send(:item_count_incr, "fnordfnord")
+    @matrix.send(:item_count_incr, "foofnord")
+    @matrix.add_single("user123", "fnordfnord", ["foofnord", "barfnord"])
+    @matrix.send(:item_count, "foofnord").should == 1
+    @matrix.send(:item_count, "barfnord").should == 0
+    @matrix.send(:item_count, "fnordfnord").should == 3
+  end
 
   it "should calculate all item<->item pairs (3)" do
     res = @matrix.send(:all_pairs, ["foo", "bar", "fnord"])
