@@ -24,7 +24,7 @@ int main(int argc, char **argv){
   char* cur_batch;
   char *iikey;
 
-  int batch_size = 200; /* FIXPAUL: make option */
+  int batch_size = 100; /* FIXPAUL: make option */
   int maxItems = 50; /* FIXPAUL: make option */
   
   struct {
@@ -99,8 +99,8 @@ int main(int argc, char **argv){
 
   freeReplyObject(reply);
 
-  if(itemCount == 0){
-    printf("exit: item count is zero\n");
+  if(itemCount < 2){
+    printf("exit: item count is zero or one\n");
     return 0;
   }
   
