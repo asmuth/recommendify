@@ -134,8 +134,8 @@ int main(int argc, char **argv){
 
   freeReplyObject(reply);
 
-  if(itemCount == 0){
-    fputs("Item count is zero\n", stderr);
+  if(itemCount < 2){
+    fputs("Item count is smaller than two\n", stderr);
     return EXIT_SUCCESS;
   }
   
