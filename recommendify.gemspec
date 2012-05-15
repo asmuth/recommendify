@@ -13,8 +13,6 @@ Gem::Specification.new do |s|
   s.description = %q{Recommendify is a distributed, incremental item-based recommendation engine for binary input ratings. It's based on ruby and redis and uses an approach called "Collaborative Filtering"}
   s.licenses    = ["MIT"]
 
-  s.extensions = ['ext/extconf.rb']
-
   s.add_dependency "redis", ">= 2.2.2"
 
   s.add_development_dependency "rspec", "~> 2.8.0"

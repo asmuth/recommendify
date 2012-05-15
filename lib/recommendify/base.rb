@@ -1,28 +1,19 @@
 class Recommendify::Base
 
-  attr_reader :similarity_matrix, :input_matrices
+  attr_reader :similarity_matrix, :input_matrices, :max_neighbors
 
-  @@max_neighbors = nil
-  @@input_matrices = {}
+  def initialize(input_matrices = nil, opts = {})
+    @max_neighbors = opts[:max_neighbors] || Recommendify::DEFAULT_MAX_NEIGHBORS
 
-  def self.max_neighbors(n=nil)    
-    return @@max_neighbors unless n
-    @@max_neighbors = n
-  end
+    @input_matrices = if input_matrices
+      Hash[input_matrices.map{ |key, opts|
+        opts.merge!(:key => key, :redis_prefix => redis_prefix)
+        [ key, Recommendify::InputMatrix.create(opts) ]
+      }]
+    else
+      {}
+    end
 
-  def self.input_matrix(key, opts)
-    @@input_matrices[key] = opts
-  end
-
-  def self.input_matrices
-    @@input_matrices
-  end
-
-  def initialize    
-    @input_matrices = Hash[self.class.input_matrices.map{ |key, opts| 
-      opts.merge!(:key => key, :redis_prefix => redis_prefix)
-      [ key, Recommendify::InputMatrix.create(opts) ]
-    }]
     @similarity_matrix = Recommendify::SimilarityMatrix.new(
       :max_neighbors => max_neighbors,
       :key => :similarities,
@@ -32,10 +23,6 @@ class Recommendify::Base
 
   def redis_prefix
     "recommendify"
-  end
-
-  def max_neighbors
-    self.class.max_neighbors || Recommendify::DEFAULT_MAX_NEIGHBORS
   end
 
   def method_missing(method, *args)
@@ -57,7 +44,7 @@ class Recommendify::Base
   def for(item_id)
     similarity_matrix[item_id].map do |item_id, similarity|
       Recommendify::Neighbor.new(
-        :item_id => item_id, 
+        :item_id => item_id,
         :similarity => similarity
       )
     end.sort
@@ -69,7 +56,7 @@ class Recommendify::Base
 
   def process_item!(item_id)
     input_matrices.map do |k,m|
-      neighbors = m.similarities_for(item_id).map do |i,w|        
+      neighbors = m.similarities_for(item_id).map do |i,w|
         [i,w*m.weight]
       end
       similarity_matrix.update(item_id, neighbors)
