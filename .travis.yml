@@ -1,1 +1,3 @@
-rvm: 1.9.3
+language: ruby
+  - 1.9.3
+
