@@ -18,6 +18,14 @@ class Recommendify::Base
     @@input_matrices
   end
 
+  def self.similarity_matrix(name)
+    @similarity_matrix = name
+  end
+
+  def self.similarity_matrix_key
+    @similarity_matrix || :similarities
+  end
+
   def initialize    
     @input_matrices = Hash[self.class.input_matrices.map{ |key, opts| 
       opts.merge!(:key => key, :redis_prefix => redis_prefix)
@@ -25,7 +33,7 @@ class Recommendify::Base
     }]
     @similarity_matrix = Recommendify::SimilarityMatrix.new(
       :max_neighbors => max_neighbors,
-      :key => :similarities,
+      :key => self.class.similarity_matrix_key,
       :redis_prefix => redis_prefix
     )
   end
