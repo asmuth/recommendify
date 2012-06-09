@@ -1,31 +1,33 @@
+#include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include <hiredis/hiredis.h>
 
-#include "version.h"
 #include "cc_item.h" 
-#include "jaccard.c" 
-#include "cosine.c" 
-#include "output.c" 
-#include "sort.c" 
-#include "iikey.c" 
-
+#include "cosine.h"
+#include "iikey.h"
+#include "jaccard.h"
+#include "output.h"
 
 int main(int argc, char **argv){
-  int i, j, n, similarityFunc = 0;    
-  int itemCount = 0;  
+  int similarityFunc = 0;
+  size_t itemCount = 0;
   char *itemID;  
   char *redisPrefix;
   redisContext *c;
   redisReply *all_items;
   redisReply *reply;
-  int cur_batch_size;
+  size_t cur_batch_size;
   char* cur_batch;
-  char *iikey;
 
-  int batch_size = 200; /* FIXPAUL: make option */
-  int maxItems = 50; /* FIXPAUL: make option */
+	char const *redisHost = "127.0.0.1";
+	unsigned short redisPort = 6379;
+
+  size_t batch_size = 200; /* FIXPAUL: make option */
+  size_t maxItems = 50; /* FIXPAUL: make option */
   
   struct {
     char  host[1024];
@@ -33,58 +35,91 @@ int main(int argc, char **argv){
   } redis_addr;
 
   /* option parsing */
-  if(argc < 2)
-    return print_usage(argv[0]);
-
-  if(!strcmp(argv[1], "--version"))
-    return print_version();
-
-  if(!strcmp(argv[1], "--jaccard")) 
-    similarityFunc = 1;
-
-  if(!strcmp(argv[1], "--cosine"))  
-    similarityFunc = 2;
-
-  if(!similarityFunc){
-    printf("invalid option: %s\n", argv[1]);
-    return 1;
-  } else if(argc < 4 || argc > 5){
-    printf("wrong number of arguments\n");
-    print_usage(argv[0]);
-    return 1;
+  if(argc < 2) {
+    print_usage(stderr, argv[0]);
+    return EXIT_FAILURE;
   }
 
-  redisPrefix = argv[2];
-  itemID = argv[3];
-  redis_addr.host[0] = 0;
-  redis_addr.port = 0;
+	int argi;
+	for (argi = 1; argi < argc; ++argi) {
+		/* Break on first non-option argument */
+		if (argv[argi][0] != '-')
+			break;
 
-  /* configure redis location */
-  if(argc > 4){
-    char* has_port = strchr(argv[4], ':');
-    if(has_port){
-      strncpy(redis_addr.host, argv[4], strlen(argv[4]) - strlen(has_port));
-      redis_addr.host[strlen(argv[4]) - strlen(has_port)] = 0;
-      redis_addr.port = atoi(has_port + 1);
-    } else {
-      strncpy(redis_addr.host, argv[4], sizeof(redis_addr.host));
-    }
-  }
+		if (!strcmp(argv[argi], "--version")) {
+			print_version();
+			return EXIT_SUCCESS;
+		}
+		else if (!strcmp(argv[argi], "--jaccard"))
+			similarityFunc = 1;
+		else if (!strcmp(argv[argi], "--cosine"))
+			similarityFunc = 2;
 
-  /* default redis location */
-  if(strlen(redis_addr.host) == 0)
-    strcpy(redis_addr.host, "localhost");
+		else if (!strcmp(argv[argi], "--host")) {
+			if (argi + 1 < argc) {
+				fputs("--host requires a host name as parameter", stderr);
+				return EXIT_FAILURE;
+			}
+
+			redisHost = argv[++argi];
+		}
+
+		else if (!strcmp(argv[argi], "--port")) {
+			if (argi + 1 < argc) {
+				fputs("--port requires a port number as parameter", stderr);
+				return EXIT_FAILURE;
+			}
+
+			errno = 0;
+			unsigned long port = strtoul(argv[++argi], NULL, 0);
+			if (errno) {
+				fprintf(stderr, "Invalid port number %s: %s\n",
+					argv[argi], strerror(errno));
+				return EXIT_FAILURE;
+			}
+
+			if (port > USHRT_MAX) {
+				fprintf(stderr, "Port number %lu out of range\n", port);
+				return EXIT_FAILURE;
+			}
+
+			redisPort = port;
+		}
+
+		else if (!strcmp(argv[argi], "--help")) {
+			print_usage(stdout, argv[0]);
+			return EXIT_SUCCESS;
+		}
+
+		else {
+			fprintf(stderr, "Invalid option: %s\n", argv[argi]);
+			return EXIT_FAILURE;
+		}
+	}
+
+	if (argi > argc - 2) {
+		print_usage(stderr, argv[0]);
+		return EXIT_FAILURE;
+	}
+
+	if (!similarityFunc) {
+		fputs("No similarity function specified\n", stderr);
+		return EXIT_FAILURE;
+	}
+
+  redisPrefix = argv[argi + 1];
+  itemID = argv[argi + 2];
 
   if(!redis_addr.port)
     redis_addr.port = 6379;
 
   /* connect to redis */
   struct timeval timeout = { 1, 500000 }; 
-  c = redisConnectWithTimeout(redis_addr.host, redis_addr.port, timeout);
-
-  if(c->err){
-    printf("connection to redis failed: %s\n", c->errstr);
-    return 1;
+  c = redisConnectWithTimeout(redisHost, redisPort, timeout); 
+  if (!c || c->err) {
+    fprintf(stderr, "Connection to redis failed: %s\n",
+      c ? c->errstr : "Broken by design");
+    return EXIT_FAILURE;
   }
 
 
@@ -100,35 +135,34 @@ int main(int argc, char **argv){
   freeReplyObject(reply);
 
   if(itemCount < 2){
-    printf("exit: item count is zero or one\n");
-    return 0;
+    fputs("Item count is smaller than two\n", stderr);
+    return EXIT_SUCCESS;
   }
   
 
   /* get all items_ids and the total counts */ 
   all_items = redisCommand(c,"HGETALL %s:items", redisPrefix);
 
-  if(all_items->type != REDIS_REPLY_ARRAY)
-    return 1;
+  if (all_items->type != REDIS_REPLY_ARRAY)
+    return EXIT_FAILURE;
 
 
   /* populate the cc_items array */ 
-  int cc_items_size = all_items->elements / 2;  
-  int cc_items_mem = cc_items_size * sizeof(struct cc_item);
+  size_t cc_items_size = all_items->elements / 2;  
+  size_t cc_items_mem = cc_items_size * sizeof(struct cc_item);
   struct cc_item *cc_items = malloc(cc_items_mem);
   cc_items_size--;
 
   if(!cc_items){    
-    printf("cannot allocate memory: %i", cc_items_mem);
-    return 1;
+    fprintf(stderr, "Cannot allocate %lu bytes of memory: %s",
+      cc_items_mem, strerror(errno));
+    return EXIT_FAILURE;
   }
   
-  i = 0;
-  for (j = 0; j < all_items->elements/2; j++){                   
-    if(strcmp(itemID, all_items->element[j*2]->str) != 0){      
-      strncpy(cc_items[i].item_id, all_items->element[j*2]->str, ITEM_ID_SIZE);
-      cc_items[i].total_count = atoi(all_items->element[j*2+1]->str);
-      i++;
+  for (size_t i = 0; i < all_items->elements/2; ++i){                   
+    if(strcmp(itemID, all_items->element[i*2]->str) != 0){      
+      strncpy(cc_items[i].item_id, all_items->element[i*2]->str, ITEM_ID_SIZE);
+      cc_items[i].total_count = atoi(all_items->element[i*2+1]->str);
     }
   }
 
@@ -136,32 +170,29 @@ int main(int argc, char **argv){
 
 
   // batched redis hmgets on the ccmatrix
-  cur_batch = (char *)malloc(((batch_size * (ITEM_ID_SIZE + 4) * 2) + 100) * sizeof(char));
+  cur_batch = malloc(batch_size * (ITEM_ID_SIZE + 4) * 2);
 
   if(!cur_batch){    
-    printf("cannot allocate memory");
-    return 1;
+    perror("Cannot allocate memory");
+    return EXIT_FAILURE;
   }
 
-  n = cc_items_size;
-  while(n >= 0){
+  size_t n;
+  for (n = cc_items_size; n >= 0; n -= batch_size) {
     cur_batch_size = ((n-1 < batch_size) ? n-1 : batch_size);
-    sprintf(cur_batch, "HMGET %s:ccmatrix ", redisPrefix);
 
-    for(i = 0; i < cur_batch_size; i++){
-      iikey = item_item_key(itemID, cc_items[n-i].item_id);
+    size_t cur_batch_off = 0;
 
-      strcat(cur_batch, iikey);
-      strcat(cur_batch, " ");
+    for (size_t i = 0; i < cur_batch_size; i++) {
+      cur_batch_off +=
+        item_item_key(cur_batch + cur_batch_off, itemID, cc_items[n-i].item_id);
+      cur_batch[cur_batch_off - 1] = ' ';
+    }
 
-      if(iikey)
-        free(iikey);
-    }    
-
-    redisAppendCommand(c, cur_batch);  
+    redisAppendCommand(c, "HMGET %s:ccmatrix %s", redisPrefix, cur_batch);  
     redisGetReply(c, (void**)&reply);
       
-    for(j = 0; j < reply->elements; j++){
+    for (size_t j = 0; j < reply->elements; j++){
       if(reply->element[j]->str){
         cc_items[n-j].coconcurrency_count = atoi(reply->element[j]->str);
       } else {
@@ -170,7 +201,6 @@ int main(int argc, char **argv){
     }
 
     freeReplyObject(reply);
-    n -= batch_size;
   }
 
   free(cur_batch);
@@ -186,8 +216,9 @@ int main(int argc, char **argv){
 
   
   /* find the top x items with simple bubble sort */
-  for(i = 0; i < maxItems - 1; ++i){
-    for (j = 0; j < cc_items_size - i - 1; ++j){
+  for(size_t i = 0; i < maxItems - 1; ++i){
+    n -= batch_size;
+    for (size_t j = 0; j < cc_items_size - i - 1; ++j){
       if (cc_items[j].similarity > cc_items[j + 1].similarity){
         struct cc_item tmp = cc_items[j];
         cc_items[j] = cc_items[j + 1];
@@ -198,17 +229,17 @@ int main(int argc, char **argv){
 
 
   /* print top k items */
-  n = ((cc_items_size < maxItems) ? cc_items_size : maxItems);
-  for(j = 0; j < n; j++){
-    i = cc_items_size-j-1;
+  size_t m = ((cc_items_size < maxItems) ? cc_items_size : maxItems);
+  for(size_t j = 0; j < m; j++){
+    size_t i = cc_items_size-j-1;
     if(cc_items[i].similarity > 0){
-      print_item(cc_items[i]);      
+      print_item(cc_items + i);      
     }    
   }
 
 
-  free(cc_items); 
-  return 0;
+  free(cc_items);
+  return EXIT_SUCCESS;
 }
 
 

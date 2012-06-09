@@ -11,8 +11,9 @@ task :default => "spec"
 desc "Generate documentation"
 task YARD::Rake::YardocTask.new
 
+task :native => "bin/recommendify"
 
 desc "Compile the native client"
-task :build_native do
-  exec "cd ext && ruby extconf.rb && make"
+file "bin/recommendify" => FileList['ext/*.c'] do |t|
+  %x{gcc -pedantic-errors -Wall -std=c99 -lhiredis -o #{t.name} #{t.prerequisites.join(' ')}}
 end
