@@ -20,7 +20,7 @@ describe Recommendify::JaccardInputMatrix do
     ).should == 2.0/6.0
   end
 
-  it "should calculate the correct similarity between to items" do
+  it "should calculate the correct similarity between two items" do
     add_two_item_test_data!(@matrix)
     # sim(fnord,blubb) = (users(fnord) & users(blub)) / (users(fnord) + users(blubb))
     # => {user42 user48} / {user42 user46 user48 user50} + {user42 user44 user48}
