@@ -113,7 +113,7 @@ The maximum number of entries in the co-concurrence and similarity matrix is k(n
 After you have compiled the native worker, you can pass the `:native => true` option to the input_matrix. This speeds up processing by at least 10x.
 
 ```
-cd ~/.rvm/gems/ruby-1.9.3-p0/gems/recommendify-0.2.2/
+cd ~/.rvm/gems/ruby-1.9.3-p0/gems/recommendify-0.3.8/
 bundle exec rake build_native
 ```
 
