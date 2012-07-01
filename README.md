@@ -86,7 +86,7 @@ recommender.process!
 recommender.process_item!("product65")
 
 # retrieve similar products to "product23"
-recommender.for("item23") 
+recommender.for("product23") 
   => [ <Recommendify::Neighbor item_id:"product65" similarity:0.23>, (...) ]
 
 # remove "product23" from the similarity matrix and the input matrices. you should 
