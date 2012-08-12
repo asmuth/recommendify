@@ -9,12 +9,15 @@ module Recommendify::CCMatrix
 
   def add_set(set_id, item_ids)
     # FIXPAUL: forbid | and : in item_ids
+
     item_ids.each do |item_id|
       item_count_incr(item_id)
     end
-    all_pairs(item_ids).map do |pair| 
-      i1, i2 = pair.split(":") 
-      ccmatrix.incr(i1, i2)
+    Recommendify.redis.pipelined do
+      all_pairs(item_ids).map do |pair| 
+        i1, i2 = pair.split(":") 
+        ccmatrix.incr(i1, i2)
+      end
     end
   end
 
