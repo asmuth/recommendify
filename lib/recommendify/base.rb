@@ -20,6 +20,7 @@ class Recommendify::Base
   end
 
   def initialize    
+    @@input_matrices[self.class.to_s] = {} if @@input_matrices[self.class.to_s].nil?
     @input_matrices = Hash[self.class.input_matrices[self.class.to_s].map{ |key, opts| 
       opts.merge!(:key => key, :redis_prefix => redis_prefix)
       [ key, Recommendify::InputMatrix.create(opts) ]
