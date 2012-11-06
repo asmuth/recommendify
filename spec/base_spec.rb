@@ -24,7 +24,8 @@ describe Recommendify::Base do
 
     it "should add an input_matrix by 'key'" do
       Recommendify::Base.input_matrix(:myinput, :similarity_func => :jaccard)
-      Recommendify::Base.send(:class_variable_get, :@@input_matrices).keys.should == [:myinput]
+      Recommendify::Base.send(:class_variable_get, :@@input_matrices).keys.should == [ "Recommendify::Base" ]
+      Recommendify::Base.send(:class_variable_get, :@@input_matrices)["Recommendify::Base"].keys.should == [:myinput]
     end
 
     it "should retrieve an input_matrix on a new instance" do
