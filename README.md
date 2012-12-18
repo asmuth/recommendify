@@ -22,8 +22,8 @@ Your input data (the so called interaction-sets) should look like this:
 
 ```
 # FORMAT A: user bought products (select buyerid, productid from sales group_by buyerid)
-[user23] product5 produt42 product17
-[user42] product8 produt16 product5
+[user23] product5 product42 product17
+[user42] product8 product16 product5
 
 # FORMAT B: user watched video (this can be transformed to the upper representation with a map/reduce)
 user3 -> video3
@@ -75,7 +75,7 @@ recommender = MyRecommender.new
 # add `order_id->product_id` interactions to the order_item_sim input
 # you can add data incrementally and call RecommendedItem.process! to update
 # the similarity matrix at any time.
-recommender.order_items.add_set("order1", ["product23", "product65", "productm23"])
+recommender.order_items.add_set("order1", ["product23", "product65", "product23"])
 recommender.order_items.add_set("order2", ["product14", "product23"])
 
 # Calculate all elements of the similarity matrix
@@ -86,7 +86,7 @@ recommender.process!
 recommender.process_item!("product65")
 
 # retrieve similar products to "product23"
-recommender.for("item23") 
+recommender.for("product23") 
   => [ <Recommendify::Neighbor item_id:"product65" similarity:0.23>, (...) ]
 
 # remove "product23" from the similarity matrix and the input matrices. you should 
@@ -96,7 +96,7 @@ recommender.delete_item!("product23")
 
 ### how it works
 
-Recommendify keeps an incrementally updated `item x item` matrix, the "co-concurrency matrix". This matrix stores the number of times that a combination of two items has appeared in an interaction/preferrence set. The co-concurrence counts are processed with a jaccard similarity measure to retrieve another `item x item` similarity matrix, which is used to find the N most similar items for each item. This is also called "Item-based Collaborative Filtering with binary ratings" (see Miranda, Alipio et al. [1])
+Recommendify keeps an incrementally updated `item x item` matrix, the "co-concurrency matrix". This matrix stores the number of times that a combination of two items has appeared in an interaction/preference set. The co-concurrence counts are processed with a jaccard similarity measure to retrieve another `item x item` similarity matrix, which is used to find the N most similar items for each item. This is also called "Item-based Collaborative Filtering with binary ratings" (see Miranda, Alipio et al. [1])
 
 1. Group the input user->item pairs by user-id and store them into interaction sets
 2. For each item<->item combination in the interaction set increment the respective element in the co-concurrence matrix
