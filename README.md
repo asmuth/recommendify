@@ -13,6 +13,28 @@ _Recommendify is a ruby/redis based recommendation engine_  - The recommendation
 + __"Users that viewed this video also viewed..."__ from `user_id--viewed-->video_id` pairs
 + __"Users that like this venue also like..."__ from `user_id--likes-->venue_id` pairs
 
+Requirements
+------------
+
+Installing the recommendify gem will fail if your system does not have the hiredis library.
+
+To install on OSX run:
+
+```shell
+brew install hiredis
+```
+
+To install on Ubuntu:
+
+```shell
+apt-get install libhiredis-dev
+```
+
+To install on other platforms:
+
+```shell
+git clone https://github.com/antirez/hiredis.git && cd hiredis && make && sudo make install && sudo ldconfig
+```
 
 
 synopsis
