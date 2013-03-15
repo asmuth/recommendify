@@ -4,7 +4,7 @@ $:.push File.expand_path("../lib", __FILE__)
 Gem::Specification.new do |s|
   s.name        = "recommendify"
   s.version     = "0.3.8"
-  s.date        = Time.now.strftime("%Y/%m/%d")
+  s.date        = Time.now.strftime("%Y-%m-%d")
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Paul Asmuth"]
   s.email       = ["paul@paulasmuth.com"]
