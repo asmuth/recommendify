@@ -26,6 +26,14 @@ class Recommendify::Base
     @similarity_matrix || :similarities
   end
 
+  def self.redis_prefix(name)
+    @redis_prefix = name
+  end
+
+  def self.redis_prefix_value
+    @redis_prefix || "recommendify"
+  end
+
   def initialize    
     @input_matrices = Hash[self.class.input_matrices.map{ |key, opts| 
       opts.merge!(:key => key, :redis_prefix => redis_prefix)
@@ -39,7 +47,7 @@ class Recommendify::Base
   end
 
   def redis_prefix
-    "recommendify"
+    self.class.redis_prefix_value
   end
 
   def max_neighbors
