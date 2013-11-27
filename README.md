@@ -122,9 +122,9 @@ example
 
 These recommendations were calculated from 2,3mb "profile visit"-data (taken from www.talentsuche.de) - keep in mind that the recommender uses only visitor->visited data, it __doesn't know the gender__  of a user. 
 
-[ ![Example Results](https://raw.github.com/paulasmuth/recommendify/master/doc/example.png) ](http://falbala.23loc.com/~paul/recommendify_out_1.html)
+[ ![Example Results](https://raw.github.com/paulasmuth/recommendify/master/doc/example.png) ](https://web.archive.org/web/20120827045718/http://falbala.23loc.com/~paul/recommendify_out_1.html)
 
-full snippet: http://falbala.23loc.com/~paul/recommendify_out_1.html 
+full snippet: [falbala.23loc.com/~paul/recommendify_out_1.html](https://web.archive.org/web/20120827045718/http://falbala.23loc.com/~paul/recommendify_out_1.html)
 
 Initially processing the 120.047 `visitor_id->profile_id` pairs currently takes around half an hour with the ruby-only implementation and ~130 seconds with the native/c implementation on a single core. It creates a 24.1mb hashtable in redis (with truncated user_rows a' max 100 items). In another real data set with very short user rows (purchase/payment data) it used only 3.4mb for 90k items with very good results. You can try this for yourself; the complete data and code is in `doc/example.rb` and `doc/example_data.csv`. 
 
