@@ -11,7 +11,8 @@ class Recommendify::Base
   end
 
   def self.input_matrix(key, opts)
-    @@input_matrices[key] = opts
+    @@input_matrices[self.to_s] = {} if @@input_matrices[self.to_s].nil?
+    @@input_matrices[self.to_s][key] = opts
   end
 
   def self.input_matrices
@@ -19,19 +20,24 @@ class Recommendify::Base
   end
 
   def initialize    
-    @input_matrices = Hash[self.class.input_matrices.map{ |key, opts| 
+    @@input_matrices[self.class.to_s] = {} if @@input_matrices[self.class.to_s].nil?
+    @input_matrices = Hash[self.class.input_matrices[self.class.to_s].map{ |key, opts| 
       opts.merge!(:key => key, :redis_prefix => redis_prefix)
       [ key, Recommendify::InputMatrix.create(opts) ]
     }]
     @similarity_matrix = Recommendify::SimilarityMatrix.new(
       :max_neighbors => max_neighbors,
-      :key => :similarities,
+      :key => similarity_matrix_key,
       :redis_prefix => redis_prefix
     )
   end
 
   def redis_prefix
     "recommendify"
+  end
+
+  def similarity_matrix_key
+    "#{redis_prefix}_similarities"
   end
 
   def max_neighbors
