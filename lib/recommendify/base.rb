@@ -1,35 +1,45 @@
-class Recommendify::Base
-
-  attr_reader :similarity_matrix, :input_matrices
-
-  @@max_neighbors = nil
-  @@input_matrices = {}
-
-  def self.max_neighbors(n=nil)    
-    return @@max_neighbors unless n
-    @@max_neighbors = n
+module Recommendify::Base
+  def self.included(base)
+    base.extend(ClassMethods)
   end
 
-  def self.input_matrix(key, opts)
-    @@input_matrices[self.to_s] = {} if @@input_matrices[self.to_s].nil?
-    @@input_matrices[self.to_s][key] = opts
+  module ClassMethods
+    def input_matrix(key, opts={})
+      @matrices ||= {}
+      @matrices[key] = opts
+    end
+
+    def input_matrices=(val)
+      @matrices = val
+    end
+
+    def input_matrices
+      @matrices
+    end
+
+    def max_neighbors(n=nil)    
+      return @max_neighbors unless n
+      @max_neighbors = n
+    end
   end
 
-  def self.input_matrices
-    @@input_matrices
-  end
-
-  def initialize    
-    @@input_matrices[self.class.to_s] = {} if @@input_matrices[self.class.to_s].nil?
-    @input_matrices = Hash[self.class.input_matrices[self.class.to_s].map{ |key, opts| 
+  def input_matrices
+    @input_matrices ||= Hash[self.class.input_matrices.map{ |key, opts|
       opts.merge!(:key => key, :redis_prefix => redis_prefix)
       [ key, Recommendify::InputMatrix.create(opts) ]
     }]
-    @similarity_matrix = Recommendify::SimilarityMatrix.new(
+  end
+
+  def similarity_matrix
+    @similarity_matrix ||= Recommendify::SimilarityMatrix.new(
       :max_neighbors => max_neighbors,
       :key => similarity_matrix_key,
       :redis_prefix => redis_prefix
     )
+  end
+
+  def max_neighbors
+    self.class.max_neighbors || Recommendify::DEFAULT_MAX_NEIGHBORS
   end
 
   def redis_prefix
@@ -40,24 +50,20 @@ class Recommendify::Base
     "#{redis_prefix}_similarities"
   end
 
-  def max_neighbors
-    self.class.max_neighbors || Recommendify::DEFAULT_MAX_NEIGHBORS
-  end
-
   def method_missing(method, *args)
-    if @input_matrices.has_key?(method)
-      @input_matrices[method]
+    if input_matrices.has_key?(method)
+      input_matrices[method]
     else
       raise NoMethodError.new(method.to_s)
     end
   end
 
   def respond_to?(method)
-    @input_matrices.has_key?(method) ? true : super
+    input_matrices.has_key?(method) ? true : super
   end
 
   def all_items
-    @input_matrices.map{ |k,m| m.all_items }.flatten.uniq
+    input_matrices.map{ |k,m| m.all_items }.flatten.uniq
   end
 
   def for(item_id)
@@ -88,5 +94,4 @@ class Recommendify::Base
       m.delete_item(item_id)
     end
   end
-
 end
