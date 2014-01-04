@@ -41,7 +41,7 @@ class Recommendify::JaccardInputMatrix < Recommendify::InputMatrix
         end
 
         items.each do |item|
-          multi.srem(redis_key(:similarities, item), item_id)
+          multi.zrem(redis_key(:similarities, item), item_id)
         end
 
         multi.del redis_key(:items, item_id), redis_key(:similarities, item_id)
