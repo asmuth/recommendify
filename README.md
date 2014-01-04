@@ -1,7 +1,7 @@
 recommendify
 ============
 
-_Recommendify is a ruby/redis based recommendation engine_  - The recommendations can be updated/processed incrementally and on multiple hosts. The worker is implemented in plain ruby and native C. 
+_Recommendify is a ruby/redis based recommendation engine_  - The recommendations can be updated/processed incrementally and on multiple hosts. The worker is implemented in plain ruby and native C.
 
 [ ![Build status - Travis-ci](https://secure.travis-ci.org/paulasmuth/recommendify.png) ](http://travis-ci.org/paulasmuth/recommendify)
 
@@ -12,7 +12,6 @@ _Recommendify is a ruby/redis based recommendation engine_  - The recommendation
 + __"Users that bought this product also bought..."__ from `user_id--bought-->product_id` pairs
 + __"Users that viewed this video also viewed..."__ from `user_id--viewed-->video_id` pairs
 + __"Users that like this venue also like..."__ from `user_id--likes-->venue_id` pairs
-
 
 
 synopsis
@@ -52,7 +51,7 @@ usage
 
 ```ruby
 
-# Our similarity matrix, we calculate the similarity via co-concurrence 
+# Our similarity matrix, we calculate the similarity via co-concurrence
 # of products in "orders" using the jaccard similarity measure.
 class MyRecommender < Recommendify::Base
 
@@ -60,12 +59,11 @@ class MyRecommender < Recommendify::Base
   max_neighbors 50
 
   # define an input data set "order_items". we'll add "order_id->product_id"
-  # pairs to this input and use the jaccard coefficient to retrieve a 
+  # pairs to this input and use the jaccard coefficient to retrieve a
   # "customers that ordered item i1 also ordered item i2" statement and apply
   # the result to the item<->item similarity matrix with a weight of 5.0
-  input_matrix :order_items,  
-    # :native => true,
-    :similarity_func => :jaccard,    
+  input_matrix :order_items,
+    :similarity_func => :jaccard,
     :weight => 5.0
 
 end
@@ -86,12 +84,12 @@ recommender.process!
 recommender.process_item!("product65")
 
 # retrieve similar products to "product23"
-recommender.for("item23") 
+recommender.similarities_for("item23")
   => [ <Recommendify::Neighbor item_id:"product65" similarity:0.23>, (...) ]
 
-# remove "product23" from the similarity matrix and the input matrices. you should 
+# remove "product23" from the similarity matrix and the input matrices. you should
 # do this if your items 'expire', since it will speed up the calculation
-recommender.delete_item!("product23") 
+recommender.delete_item!("product23")
 ```
 
 ### how it works
@@ -106,28 +104,7 @@ Recommendify keeps an incrementally updated `item x item` matrix, the "co-concur
 
 ### does it scale?
 
-The maximum number of entries in the co-concurrence and similarity matrix is k(n) = (n^2)-(n/2), it grows O(n^2). However, in a real scenario it is very unlikely that all item<->item combinations appear in a interaction set and we use a sparse matrix which will only use memory for elemtens with a value > 0. The size of the similarity grows O(n). 
-
-### native/fast worker
-
-After you have compiled the native worker, you can pass the `:native => true` option to the input_matrix. This speeds up processing by at least 10x.
-
-```
-cd ~/.rvm/gems/ruby-1.9.3-p0/gems/recommendify-0.2.2/
-bundle exec rake build_native
-```
-
-example
--------
-
-These recommendations were calculated from 2,3mb "profile visit"-data (taken from www.talentsuche.de) - keep in mind that the recommender uses only visitor->visited data, it __doesn't know the gender__  of a user. 
-
-[ ![Example Results](https://raw.github.com/paulasmuth/recommendify/master/doc/example.png) ](http://falbala.23loc.com/~paul/recommendify_out_1.html)
-
-full snippet: http://falbala.23loc.com/~paul/recommendify_out_1.html 
-
-Initially processing the 120.047 `visitor_id->profile_id` pairs currently takes around half an hour with the ruby-only implementation and ~130 seconds with the native/c implementation on a single core. It creates a 24.1mb hashtable in redis (with truncated user_rows a' max 100 items). In another real data set with very short user rows (purchase/payment data) it used only 3.4mb for 90k items with very good results. You can try this for yourself; the complete data and code is in `doc/example.rb` and `doc/example_data.csv`. 
-
+The maximum number of entries in the co-concurrence and similarity matrix is k(n) = (n^2)-(n/2), it grows O(n^2). However, in a real scenario it is very unlikely that all item<->item combinations appear in a interaction set and we use a sparse matrix which will only use memory for elemtens with a value > 0. The size of the similarity grows O(n).
 
 
 
