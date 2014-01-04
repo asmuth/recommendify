@@ -10,9 +10,3 @@ task :default => "spec"
 
 desc "Generate documentation"
 task YARD::Rake::YardocTask.new
-
-
-desc "Compile the native client"
-task :build_native do
-  exec "cd ext && ruby extconf.rb && make"
-end

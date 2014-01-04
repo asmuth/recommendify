@@ -1,62 +1,85 @@
 class Recommendify::JaccardInputMatrix < Recommendify::InputMatrix
-
-  include Recommendify::CCMatrix
-
   def initialize(opts={})
-    check_native if opts[:native]
     super(opts)
   end
 
+  def related_items(item_id)
+      sets = Recommendify.redis.smembers(redis_key(:items, item_id))
+      keys = sets.map { |set| redis_key(:sets, set) }
+      if keys.length() > 0
+        Recommendify.redis.sunion(keys) - [item_id]
+      else
+        []
+      end
+  end
+
   def similarity(item1, item2)
-    calculate_jaccard_cached(item1, item2)
+    Recommendify.redis.zscore(redis_key(:similarities, item1), item2)
   end
 
   def similarities_for(item1)
-    return run_native(item1) if @opts[:native]
-    calculate_similarities(item1)
+    Recommendify.redis.zrevrange(redis_key(:similarities, item1), 0, -1, :with_scores => true)
   end
 
-private
+  def process_item!(item)
+    cache_similarities_for(item)
+  end
 
-  def calculate_similarities(item1)
-    (all_items - [item1]).map do |item2|
-      [item2, similarity(item1, item2)]
+  def process!()
+    all_items.each do |item|
+      process_item!(item)
     end
   end
 
-  def calculate_jaccard_cached(item1, item2)
-    val = ccmatrix[item1, item2]
-    val.to_f / (item_count(item1)+item_count(item2)-val).to_f
-  end
+  def delete_item(item_id)
+    Recommendify.redis.watch(redis_key(:items, item_id), redis_key(:similarities, item_id)) do
+      sets = Recommendify.redis.smembers(redis_key(:items, item_id))
+      items = Recommendify.redis.smembers(redis_key(:similarities, item_id))
+      Recommendify.redis.multi do |multi|
+        sets.each do |set|
+          multi.srem(redis_key(:sets, set), item_id)
+        end
 
-  def calculate_jaccard(set1, set2)
-    (set1&set2).length.to_f / (set1 + set2).uniq.length.to_f
-  end
+        items.each do |item|
+          multi.srem(redis_key(:similarities, item), item_id)
+        end
 
-  def run_native(item_id)
-    res = %x{#{native_path} --jaccard "#{redis_key}" "#{item_id}" "#{redis_url}"}
-    raise "error: dirty exit (#{$?})" if $? != 0
-    res.split("\n").map do |line|
-      sim = line.match(/OUT: \(([^\)]*)\) \(([^\)]*)\)/)
-      unless sim
-        raise "error: #{res}" unless (res||"").include?('exit:')
-      else
-        [sim[1], sim[2].to_f]
+        multi.del redis_key(:items, item_id), redis_key(:similarities, item_id)
       end
-    end.compact
+    end
   end
 
-  def check_native
-    return true if ::File.exists?(native_path)
-    raise "recommendify_native not found - you need to run rake build_native first"
+  private
+
+  def cache_similarity(item1, item2)
+    score = calculate_jaccard(item1, item2)
+
+    if score > 0
+      Recommendify.redis.multi do |multi|
+        multi.zadd(redis_key(:similarities, item1), score, item2)
+        multi.zadd(redis_key(:similarities, item2), score, item1)
+      end
+    end
   end
 
-  def native_path
-    ::File.expand_path('../../../bin/recommendify', __FILE__)
+  def cache_similarities_for(item)
+    related_items(item).each do |i|
+      cache_similarity(item, i)
+    end
   end
 
-  def redis_url
-    Recommendify.redis.client.location
-  end
+  def calculate_jaccard(item1, item2)
+    x = nil
+    y = nil
+    Recommendify.redis.multi do |multi|
+      x = multi.sinterstore 'temp', [redis_key(:items, item1), redis_key(:items, item2)]
+      y = multi.sunionstore 'temp', [redis_key(:items, item1), redis_key(:items, item2)]
+    end
 
+    if y.value > 0
+      return x.value.to_f/y.value.to_f*self.weight
+    else
+      return 0.0
+    end
+  end
 end
