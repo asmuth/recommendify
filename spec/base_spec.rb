@@ -13,14 +13,14 @@ describe Recommendify::Base do
   describe "configuration" do
 
     it "should return default max_neighbors if not configured" do
-      Recommendify::DEFAULT_MAX_NEIGHBORS.should == 50      
+      Recommendify::DEFAULT_MAX_NEIGHBORS.should == 50
       sm = BaseRecommender.new
       sm.max_neighbors.should == 50
     end
-      
+
     it "should remember max_neighbors if configured" do
       BaseRecommender.max_neighbors(23)
-      sm = BaseRecommender.new      
+      sm = BaseRecommender.new
       sm.max_neighbors.should == 23
     end
 
@@ -57,9 +57,8 @@ describe Recommendify::Base do
       BaseRecommender.input_matrix(:myfirstinput, :similarity_func => :jaccard)
       BaseRecommender.input_matrix(:mysecondinput, :similarity_func => :jaccard)
       sm = BaseRecommender.new
-      sm.myfirstinput.should_receive(:similarities_for).with("fnorditem").and_return([["fooitem",0.5]])
-      sm.mysecondinput.should_receive(:similarities_for).with("fnorditem").and_return([["fooitem",0.5]])
-      sm.similarity_matrix.stub!(:update)
+      sm.myfirstinput.should_receive(:process_item!).with("fnorditem").and_return([["fooitem",0.5]])
+      sm.mysecondinput.should_receive(:process_item!).with("fnorditem").and_return([["fooitem",0.5]])
       sm.process_item!("fnorditem")
     end
 
@@ -67,10 +66,8 @@ describe Recommendify::Base do
       BaseRecommender.input_matrix(:myfirstinput, :similarity_func => :jaccard)
       BaseRecommender.input_matrix(:mysecondinput, :similarity_func => :jaccard)
       sm = BaseRecommender.new
-      sm.myfirstinput.should_receive(:similarities_for).and_return([["fooitem",0.5]])      
-      sm.mysecondinput.should_receive(:similarities_for).and_return([["fooitem",0.75], ["baritem", 1.0]])
-      sm.similarity_matrix.should_receive(:update).with("fnorditem", [["fooitem",0.5]])
-      sm.similarity_matrix.should_receive(:update).with("fnorditem", [["fooitem",0.75], ["baritem", 1.0]])
+      sm.myfirstinput.should_receive(:process_item!).and_return([["fooitem",0.5]])
+      sm.mysecondinput.should_receive(:process_item!).and_return([["fooitem",0.75], ["baritem", 1.0]])
       sm.process_item!("fnorditem")
     end
 
@@ -78,17 +75,17 @@ describe Recommendify::Base do
       BaseRecommender.input_matrix(:myfirstinput, :similarity_func => :jaccard, :weight => 4.0)
       BaseRecommender.input_matrix(:mysecondinput, :similarity_func => :jaccard)
       sm = BaseRecommender.new
-      sm.myfirstinput.should_receive(:similarities_for).and_return([["fooitem",0.5]])      
-      sm.mysecondinput.should_receive(:similarities_for).and_return([["fooitem",0.75], ["baritem", 1.0]])
-      sm.similarity_matrix.should_receive(:update).with("fnorditem", [["fooitem",2.0]])
-      sm.similarity_matrix.should_receive(:update).with("fnorditem", [["fooitem",0.75], ["baritem", 1.0]])
+      sm.myfirstinput.should_receive(:process_item!).and_return([["fooitem",0.5]])
+      sm.mysecondinput.should_receive(:process_item!).and_return([["fooitem",0.75], ["baritem", 1.0]])
       sm.process_item!("fnorditem")
     end
 
     it "should retrieve all items from all input matrices" do
-      BaseRecommender.input_matrix(:anotherinput, :similarity_func => :test, :all_items => ["foo", "bar"])
-      BaseRecommender.input_matrix(:yetanotherinput, :similarity_func => :test, :all_items => ["fnord", "shmoo"])
-      sm = BaseRecommender.new    
+      BaseRecommender.input_matrix(:anotherinput, :similarity_func => :jaccard)
+      BaseRecommender.input_matrix(:yetanotherinput, :similarity_func => :jaccard)
+      sm = BaseRecommender.new
+      sm.anotherinput.add_set('a', ["foo", "bar"])
+      sm.yetanotherinput.add_set('b', ["fnord", "shmoo"])
       sm.all_items.length.should == 4
       sm.all_items.should include("foo")
       sm.all_items.should include("bar")
@@ -97,9 +94,11 @@ describe Recommendify::Base do
     end
 
     it "should retrieve all items from all input matrices (uniquely)" do
-      BaseRecommender.input_matrix(:anotherinput, :similarity_func => :test, :all_items => ["foo", "bar"])
-      BaseRecommender.input_matrix(:yetanotherinput, :similarity_func => :test, :all_items => ["fnord", "bar"])
-      sm = BaseRecommender.new    
+      BaseRecommender.input_matrix(:anotherinput, :similarity_func => :jaccard)
+      BaseRecommender.input_matrix(:yetanotherinput, :similarity_func => :jaccard)
+      sm = BaseRecommender.new
+      sm.anotherinput.add_set('a', ["foo", "bar"])
+      sm.yetanotherinput.add_set('b', ["fnord", "bar"])
       sm.all_items.length.should == 3
       sm.all_items.should include("foo")
       sm.all_items.should include("bar")
@@ -111,18 +110,24 @@ describe Recommendify::Base do
   describe "process!" do
 
     it "should call process_item for all input_matrix.all_items's" do
-      BaseRecommender.input_matrix(:anotherinput, :similarity_func => :test, :all_items => ["foo", "bar"])
-      BaseRecommender.input_matrix(:yetanotherinput, :similarity_func => :test, :all_items => ["fnord", "shmoo"])
-      sm = BaseRecommender.new    
-      sm.should_receive(:process_item!).exactly(4).times
+      BaseRecommender.input_matrix(:anotherinput, :similarity_func => :jaccard)
+      BaseRecommender.input_matrix(:yetanotherinput, :similarity_func => :jaccard)
+      sm = BaseRecommender.new
+      sm.anotherinput.add_set('a', ["foo", "bar"])
+      sm.yetanotherinput.add_set('b', ["fnord", "shmoo"])
+      sm.anotherinput.should_receive(:process!).exactly(1).times
+      sm.yetanotherinput.should_receive(:process!).exactly(1).times
       sm.process!
     end
 
     it "should call process_item for all input_matrix.all_items's (uniquely)" do
-      BaseRecommender.input_matrix(:anotherinput, :similarity_func => :test, :all_items => ["foo", "bar"])
-      BaseRecommender.input_matrix(:yetanotherinput, :similarity_func => :test, :all_items => ["fnord", "bar"])
-      sm = BaseRecommender.new    
-      sm.should_receive(:process_item!).exactly(3).times
+      BaseRecommender.input_matrix(:anotherinput, :similarity_func => :test)
+      BaseRecommender.input_matrix(:yetanotherinput, :similarity_func => :test)
+      sm = BaseRecommender.new
+      sm.anotherinput.add_set('a', ["foo", "bar"])
+      sm.yetanotherinput.add_set('b', ["fnord", "bar"])
+      sm.anotherinput.should_receive(:process!).exactly(1).times
+      sm.yetanotherinput.should_receive(:process!).exactly(1).times
       sm.process!
     end
 
@@ -130,42 +135,14 @@ describe Recommendify::Base do
 
   describe "for(item_id)" do
 
-    it "should retrieve the n-most similar neighbors" do
-      sm = BaseRecommender.new
-      sm.similarity_matrix.should_receive(:[]).with("fnorditem").and_return({:fooitem => 0.4, :baritem => 1.5})
-      sm.for("fnorditem").length.should == 2
-    end
-    
     it "should not throw exception for non existing items" do
       sm = BaseRecommender.new
-      sm.for("not_existing_item").length.should == 0
-    end
-
-    it "should retrieve the n-most similar neighbors as Recommendify::Neighbor objects" do
-      sm = BaseRecommender.new
-      sm.similarity_matrix.should_receive(:[]).exactly(2).times.with("fnorditem").and_return({:fooitem => 0.4, :baritem => 1.5})
-      sm.for("fnorditem").first.should be_a(Recommendify::Neighbor)
-      sm.for("fnorditem").last.should be_a(Recommendify::Neighbor)
-    end
-
-    it "should retrieve the n-most similar neighbors in the correct order" do
-      sm = BaseRecommender.new
-      sm.similarity_matrix.should_receive(:[]).exactly(4).times.with("fnorditem").and_return({:fooitem => 0.4, :baritem => 1.5})
-      sm.for("fnorditem").first.similarity.should == 1.5
-      sm.for("fnorditem").first.item_id.should == "baritem"
-      sm.for("fnorditem").last.similarity.should == 0.4
-      sm.for("fnorditem").last.item_id.should == "fooitem"
-    end
-
-    it "should return an empty array if the item if no neighbors were found" do
-      sm = BaseRecommender.new
-      sm.similarity_matrix.should_receive(:[]).with("fnorditem").and_return({})
-      sm.for("fnorditem").should == []
+      sm.similarities_for("not_existing_item").length.should == 0
     end
 
     it "should not call split on nil when retrieving a non-existent item (return an empty array)" do
       sm = BaseRecommender.new
-      sm.for("NONEXISTENT").should == []
+      sm.similarities_for("NONEXISTENT").should == []
     end
 
   end

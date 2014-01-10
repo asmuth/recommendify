@@ -98,11 +98,15 @@ module Recommendify::Base
   def similarities_for(item, with_scores = false)
     keys = input_matrices.map{ |k,m| m.redis_key(:similarities, item) }
     neighbors = nil
-    Recommendify.redis.multi do |multi|
-      multi.zunionstore 'temp', keys
-      neighbors = multi.zrevrange('temp', 0, -1, :with_scores => with_scores)
+    unless keys.empty?
+      Recommendify.redis.multi do |multi|
+        multi.zunionstore 'temp', keys
+        neighbors = multi.zrevrange('temp', 0, -1, :with_scores => with_scores)
+      end
+      return neighbors.value
+    else
+      return []
     end
-    return neighbors.value
   end
 
   def sets_for(item)

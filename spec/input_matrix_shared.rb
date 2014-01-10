@@ -1,5 +1,5 @@
 share_examples_for Recommendify::InputMatrix do
-  
+
   it "should build the correct keys" do
     @matrix.redis_key.should == "recommendify-test:mymatrix"
   end
@@ -10,10 +10,6 @@ share_examples_for Recommendify::InputMatrix do
 
   it "should respond to add_single" do
     @matrix.respond_to?(:add_single).should == true
-  end
-
-  it "should respond to similarity" do
-    @matrix.respond_to?(:similarity).should == true
   end
 
   it "should respond to similarities_for" do
