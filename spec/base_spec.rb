@@ -119,32 +119,15 @@ describe Recommendify::Base do
       sm.yetanotherinput.should_receive(:process!).exactly(1).times
       sm.process!
     end
-
-    it "should call process_item for all input_matrix.all_items's (uniquely)" do
-      BaseRecommender.input_matrix(:anotherinput, :similarity_func => :test)
-      BaseRecommender.input_matrix(:yetanotherinput, :similarity_func => :test)
-      sm = BaseRecommender.new
-      sm.anotherinput.add_set('a', ["foo", "bar"])
-      sm.yetanotherinput.add_set('b', ["fnord", "bar"])
-      sm.anotherinput.should_receive(:process!).exactly(1).times
-      sm.yetanotherinput.should_receive(:process!).exactly(1).times
-      sm.process!
-    end
-
   end
 
-  describe "for(item_id)" do
+  describe "similarities_for(item_id)" do
 
     it "should not throw exception for non existing items" do
       sm = BaseRecommender.new
       sm.similarities_for("not_existing_item").length.should == 0
     end
-
-    it "should not call split on nil when retrieving a non-existent item (return an empty array)" do
-      sm = BaseRecommender.new
-      sm.similarities_for("NONEXISTENT").should == []
-    end
-
+    
   end
 
   describe "delete_item!" do
