@@ -85,7 +85,7 @@ recommender.process_item!("product65")
 
 # retrieve similar products to "product23"
 recommender.similarities_for("item23")
-  => [ <Recommendify::Neighbor item_id:"product65" similarity:0.23>, (...) ]
+  => [ ["product65", 0.23], (...) ]
 
 # remove "product23" from the similarity matrix and the input matrices. you should
 # do this if your items 'expire', since it will speed up the calculation
@@ -104,7 +104,7 @@ Recommendify keeps an incrementally updated `item x item` matrix, the "co-concur
 
 ### does it scale?
 
-The maximum number of entries in the co-concurrence and similarity matrix is k(n) = (n^2)-(n/2), it grows O(n^2). However, in a real scenario it is very unlikely that all item<->item combinations appear in a interaction set and we use a sparse matrix which will only use memory for elemtens with a value > 0. The size of the similarity grows O(n).
+The maximum number of entries in the co-concurrence and similarity matrix is k(n) = (n^2)-(n/2), it grows O(n^2). However, in a real scenario it is very unlikely that all item<->item combinations appear in a interaction set and we use a sparse matrix which will only use memory for elements with a value > 0. The size of the similarity grows O(n).
 
 
 
