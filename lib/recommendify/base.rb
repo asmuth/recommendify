@@ -78,13 +78,16 @@ module Recommendify::Base
       end
     end
 
-    redis.multi do |multi|
-      multi.del key
-      multi.zunionstore key, item_keys, :weights => item_weights
-      multi.zrem key, item_set
+    unless item_keys.empty?
+      redis.multi do |multi|
+        multi.del key
+        multi.zunionstore key, item_keys, :weights => item_weights
+        multi.zrem key, item_set
+      end
+      return predictions_for(set_id)
+    else
+      return []
     end
-
-    return predictions_for(set_id)
   end
 
   def predictions_for(set_id, with_scores = false)
