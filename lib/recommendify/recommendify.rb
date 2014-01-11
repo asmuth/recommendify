@@ -1,7 +1,4 @@
 module Recommendify
-
-  DEFAULT_MAX_NEIGHBORS = 50
-
   @@redis = nil
 
   def self.redis=(redis)
@@ -21,5 +18,4 @@ module Recommendify
   def self.constantize(klass)
     Object.module_eval("Recommendify::#{klass}", __FILE__, __LINE__)
   end
-
 end

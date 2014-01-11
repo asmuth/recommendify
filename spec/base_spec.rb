@@ -11,19 +11,6 @@ describe Recommendify::Base do
   end
 
   describe "configuration" do
-
-    it "should return default max_neighbors if not configured" do
-      Recommendify::DEFAULT_MAX_NEIGHBORS.should == 50
-      sm = BaseRecommender.new
-      sm.max_neighbors.should == 50
-    end
-
-    it "should remember max_neighbors if configured" do
-      BaseRecommender.max_neighbors(23)
-      sm = BaseRecommender.new
-      sm.max_neighbors.should == 23
-    end
-
     it "should add an input_matrix by 'key'" do
       BaseRecommender.input_matrix(:myinput)
       BaseRecommender.input_matrices.keys.should == [:myinput]

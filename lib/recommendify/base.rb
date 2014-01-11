@@ -16,11 +16,6 @@ module Recommendify::Base
     def input_matrices
       @matrices
     end
-
-    def max_neighbors(n=nil)
-      return @max_neighbors unless n
-      @max_neighbors = n
-    end
   end
 
   def input_matrices
@@ -28,10 +23,6 @@ module Recommendify::Base
       opts.merge!(:key => key, :redis_prefix => redis_prefix)
       [ key, Recommendify::InputMatrix.new(opts) ]
     }]
-  end
-
-  def max_neighbors
-    self.class.max_neighbors || Recommendify::DEFAULT_MAX_NEIGHBORS
   end
 
   def redis_prefix
