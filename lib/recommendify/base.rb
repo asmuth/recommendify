@@ -26,7 +26,7 @@ module Recommendify::Base
   def input_matrices
     @input_matrices ||= Hash[self.class.input_matrices.map{ |key, opts|
       opts.merge!(:key => key, :redis_prefix => redis_prefix)
-      [ key, Recommendify::InputMatrix.create(opts) ]
+      [ key, Recommendify::InputMatrix.new(opts) ]
     }]
   end
 
@@ -133,7 +133,7 @@ module Recommendify::Base
 
   def delete_item!(item_id)
     input_matrices.each do |k,m|
-      m.delete_item(item_id)
+      m.delete_item!(item_id)
     end
     return self
   end

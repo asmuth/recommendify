@@ -25,8 +25,7 @@ end
 class TestRecommender
   include Recommendify::Base
 
-  input_matrix :jaccard_one,
-    :similarity_func => :jaccard
+  input_matrix :jaccard_one
 
 end
 

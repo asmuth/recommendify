@@ -25,18 +25,18 @@ describe Recommendify::Base do
     end
 
     it "should add an input_matrix by 'key'" do
-      BaseRecommender.input_matrix(:myinput, :similarity_func => :jaccard)
+      BaseRecommender.input_matrix(:myinput)
       BaseRecommender.input_matrices.keys.should == [:myinput]
     end
 
     it "should retrieve an input_matrix on a new instance" do
-      BaseRecommender.input_matrix(:myinput, :similarity_func => :jaccard)
+      BaseRecommender.input_matrix(:myinput)
       sm = BaseRecommender.new
       lambda{ sm.myinput }.should_not raise_error
     end
 
     it "should retrieve an input_matrix on a new instance and correctly overload respond_to?" do
-      BaseRecommender.input_matrix(:myinput, :similarity_func => :jaccard)
+      BaseRecommender.input_matrix(:myinput)
       sm = BaseRecommender.new
       sm.respond_to?(:process!).should be_true
       sm.respond_to?(:myinput).should be_true
@@ -44,9 +44,9 @@ describe Recommendify::Base do
     end
 
     it "should retrieve an input_matrix on a new instance and intialize the correct class" do
-      BaseRecommender.input_matrix(:myinput, :similarity_func => :jaccard)
+      BaseRecommender.input_matrix(:myinput)
       sm = BaseRecommender.new
-      sm.myinput.should be_a(Recommendify::JaccardInputMatrix)
+      sm.myinput.should be_a(Recommendify::InputMatrix)
     end
 
   end
@@ -54,8 +54,8 @@ describe Recommendify::Base do
   describe "process_item!" do
 
     it "should call similarities_for on each input_matrix" do
-      BaseRecommender.input_matrix(:myfirstinput, :similarity_func => :jaccard)
-      BaseRecommender.input_matrix(:mysecondinput, :similarity_func => :jaccard)
+      BaseRecommender.input_matrix(:myfirstinput)
+      BaseRecommender.input_matrix(:mysecondinput)
       sm = BaseRecommender.new
       sm.myfirstinput.should_receive(:process_item!).with("fnorditem").and_return([["fooitem",0.5]])
       sm.mysecondinput.should_receive(:process_item!).with("fnorditem").and_return([["fooitem",0.5]])
@@ -63,8 +63,8 @@ describe Recommendify::Base do
     end
 
     it "should call similarities_for on each input_matrix and add all outputs to the similarity matrix" do
-      BaseRecommender.input_matrix(:myfirstinput, :similarity_func => :jaccard)
-      BaseRecommender.input_matrix(:mysecondinput, :similarity_func => :jaccard)
+      BaseRecommender.input_matrix(:myfirstinput)
+      BaseRecommender.input_matrix(:mysecondinput)
       sm = BaseRecommender.new
       sm.myfirstinput.should_receive(:process_item!).and_return([["fooitem",0.5]])
       sm.mysecondinput.should_receive(:process_item!).and_return([["fooitem",0.75], ["baritem", 1.0]])
@@ -72,8 +72,8 @@ describe Recommendify::Base do
     end
 
     it "should call similarities_for on each input_matrix and add all outputs to the similarity matrix with weight" do
-      BaseRecommender.input_matrix(:myfirstinput, :similarity_func => :jaccard, :weight => 4.0)
-      BaseRecommender.input_matrix(:mysecondinput, :similarity_func => :jaccard)
+      BaseRecommender.input_matrix(:myfirstinput, :weight => 4.0)
+      BaseRecommender.input_matrix(:mysecondinput)
       sm = BaseRecommender.new
       sm.myfirstinput.should_receive(:process_item!).and_return([["fooitem",0.5]])
       sm.mysecondinput.should_receive(:process_item!).and_return([["fooitem",0.75], ["baritem", 1.0]])
@@ -81,8 +81,8 @@ describe Recommendify::Base do
     end
 
     it "should retrieve all items from all input matrices" do
-      BaseRecommender.input_matrix(:anotherinput, :similarity_func => :jaccard)
-      BaseRecommender.input_matrix(:yetanotherinput, :similarity_func => :jaccard)
+      BaseRecommender.input_matrix(:anotherinput)
+      BaseRecommender.input_matrix(:yetanotherinput)
       sm = BaseRecommender.new
       sm.anotherinput.add_set('a', ["foo", "bar"])
       sm.yetanotherinput.add_set('b', ["fnord", "shmoo"])
@@ -94,8 +94,8 @@ describe Recommendify::Base do
     end
 
     it "should retrieve all items from all input matrices (uniquely)" do
-      BaseRecommender.input_matrix(:anotherinput, :similarity_func => :jaccard)
-      BaseRecommender.input_matrix(:yetanotherinput, :similarity_func => :jaccard)
+      BaseRecommender.input_matrix(:anotherinput)
+      BaseRecommender.input_matrix(:yetanotherinput)
       sm = BaseRecommender.new
       sm.anotherinput.add_set('a', ["foo", "bar"])
       sm.yetanotherinput.add_set('b', ["fnord", "bar"])
@@ -110,8 +110,8 @@ describe Recommendify::Base do
   describe "process!" do
 
     it "should call process_item for all input_matrix.all_items's" do
-      BaseRecommender.input_matrix(:anotherinput, :similarity_func => :jaccard)
-      BaseRecommender.input_matrix(:yetanotherinput, :similarity_func => :jaccard)
+      BaseRecommender.input_matrix(:anotherinput)
+      BaseRecommender.input_matrix(:yetanotherinput)
       sm = BaseRecommender.new
       sm.anotherinput.add_set('a', ["foo", "bar"])
       sm.yetanotherinput.add_set('b', ["fnord", "shmoo"])
@@ -127,17 +127,17 @@ describe Recommendify::Base do
       sm = BaseRecommender.new
       sm.similarities_for("not_existing_item").length.should == 0
     end
-    
+
   end
 
   describe "delete_item!" do
 
     it "should call delete_item on each input_matrix" do
-      BaseRecommender.input_matrix(:myfirstinput, :similarity_func => :jaccard)
-      BaseRecommender.input_matrix(:mysecondinput, :similarity_func => :jaccard)
+      BaseRecommender.input_matrix(:myfirstinput)
+      BaseRecommender.input_matrix(:mysecondinput)
       sm = BaseRecommender.new
-      sm.myfirstinput.should_receive(:delete_item).with("fnorditem")
-      sm.mysecondinput.should_receive(:delete_item).with("fnorditem")
+      sm.myfirstinput.should_receive(:delete_item!).with("fnorditem")
+      sm.mysecondinput.should_receive(:delete_item!).with("fnorditem")
       sm.delete_item!("fnorditem")
     end
 
