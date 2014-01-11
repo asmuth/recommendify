@@ -37,7 +37,7 @@ describe Recommendify::InputMatrix do
   it "should calculate all similarities for an item (1/3)" do
     add_three_item_test_data!(@matrix)
     @matrix.process!
-    res = @matrix.similarities_for("fnord")
+    res = @matrix.similarities_for("fnord", true)
     res.length.should == 2
     res.should include ["shmoo", 0.75]
     res.should include ["blubb", 0.4]
@@ -46,7 +46,7 @@ describe Recommendify::InputMatrix do
   it "should calculate all similarities for an item (2/3)" do
     add_three_item_test_data!(@matrix)
     @matrix.process!
-    res = @matrix.similarities_for("shmoo")
+    res = @matrix.similarities_for("shmoo", true)
     res.length.should == 2
     res.should include ["blubb", 0.2]
     res.should include ["fnord", 0.75]
@@ -56,7 +56,7 @@ describe Recommendify::InputMatrix do
   it "should calculate all similarities for an item (3/3)" do
     add_three_item_test_data!(@matrix)
     @matrix.process!
-    res = @matrix.similarities_for("blubb")
+    res = @matrix.similarities_for("blubb", true)
     res.length.should == 2
     res.should include ["shmoo", 0.2]
     res.should include ["fnord", 0.4]

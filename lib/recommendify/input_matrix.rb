@@ -36,13 +36,13 @@ class Recommendify::InputMatrix
   end
 
   def related_items(item_id)
-      sets = Recommendify.redis.smembers(redis_key(:items, item_id))
-      keys = sets.map { |set| redis_key(:sets, set) }
-      if keys.length() > 0
-        Recommendify.redis.sunion(keys) - [item_id]
-      else
-        []
-      end
+    sets = Recommendify.redis.smembers(redis_key(:items, item_id))
+    keys = sets.map { |set| redis_key(:sets, set) }
+    if keys.length() > 0
+      Recommendify.redis.sunion(keys) - [item_id]
+    else
+      []
+    end
   end
 
   def similarity(item1, item2)
@@ -50,8 +50,8 @@ class Recommendify::InputMatrix
   end
 
   # calculate all similarities to other items in the matrix for item1
-  def similarities_for(item1)
-    Recommendify.redis.zrevrange(redis_key(:similarities, item1), 0, -1, :with_scores => true)
+  def similarities_for(item1, with_scores=false)
+    Recommendify.redis.zrevrange(redis_key(:similarities, item1), 0, -1, with_scores: with_scores)
   end
 
   def process_item!(item)
@@ -104,8 +104,8 @@ class Recommendify::InputMatrix
   end
 
   def cache_similarities_for(item)
-    related_items(item).each do |i|
-      cache_similarity(item, i)
+    related_items(item).each do |id|
+      cache_similarity(item, id)
     end
   end
 
@@ -113,12 +113,12 @@ class Recommendify::InputMatrix
     x = nil
     y = nil
     Recommendify.redis.multi do |multi|
-      x = multi.sinterstore 'temp', [redis_key(:items, item1), redis_key(:items, item2)]
-      y = multi.sunionstore 'temp', [redis_key(:items, item1), redis_key(:items, item2)]
+      x = multi.sinter [redis_key(:items, item1), redis_key(:items, item2)]
+      y = multi.sunion [redis_key(:items, item1), redis_key(:items, item2)]
     end
 
-    if y.value > 0
-      return x.value.to_f/y.value.to_f*self.weight
+    if y.value.length > 0
+      return (x.value.length.to_f/y.value.length.to_f)*self.weight
     else
       return 0.0
     end
