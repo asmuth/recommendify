@@ -28,17 +28,17 @@ class Recommendify::InputMatrix
   end
 
   def items_for(set)
-    Recommendify.redis.smembers redis_key(:sets, set)
+    Recommendify.redis.smembers redis_key(:items, set)
   end
 
   def sets_for(item)
-    Recommendify.redis.sunion redis_key(:items, item)
+    Recommendify.redis.sunion redis_key(:sets, item)
   end
 
   def related_items(item_id)
-    sets = Recommendify.redis.smembers(redis_key(:items, item_id))
-    keys = sets.map { |set| redis_key(:sets, set) }
-    if keys.length() > 0
+    sets = Recommendify.redis.smembers(redis_key(:sets, item_id))
+    keys = sets.map { |set| redis_key(:items, set) }
+    if keys.length > 0
       Recommendify.redis.sunion(keys) - [item_id]
     else
       []
@@ -87,9 +87,9 @@ class Recommendify::InputMatrix
 
   def add_single_nomulti(set_id, item_id)
     Recommendify.redis.sadd(redis_key(:all_items), item_id)
-    Recommendify.redis.sadd(redis_key(:sets, set_id), item_id)
+    Recommendify.redis.sadd(redis_key(:items, set_id), item_id)
     # add the set_id to the item_id's set--inverting the sets
-    Recommendify.redis.sadd(redis_key(:items, item_id), set_id)
+    Recommendify.redis.sadd(redis_key(:sets, item_id), set_id)
   end
 
   def cache_similarity(item1, item2)
@@ -104,8 +104,8 @@ class Recommendify::InputMatrix
   end
 
   def cache_similarities_for(item)
-    related_items(item).each do |id|
-      cache_similarity(item, id)
+    related_items(item).each do |related_item|
+      cache_similarity(item, related_item)
     end
   end
 
@@ -113,8 +113,8 @@ class Recommendify::InputMatrix
     x = nil
     y = nil
     Recommendify.redis.multi do |multi|
-      x = multi.sinter [redis_key(:items, item1), redis_key(:items, item2)]
-      y = multi.sunion [redis_key(:items, item1), redis_key(:items, item2)]
+      x = multi.sinter [redis_key(:sets, item1), redis_key(:sets, item2)]
+      y = multi.sunion [redis_key(:sets, item1), redis_key(:sets, item2)]
     end
 
     if y.value.length > 0

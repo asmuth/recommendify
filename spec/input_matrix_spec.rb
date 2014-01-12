@@ -12,19 +12,69 @@ describe Recommendify::InputMatrix do
 
   it_should_behave_like Recommendify::InputMatrix
 
-  it "should calculate the correct jaccard index" do
-    item1 = { :name => "item1", :sets => ["foo", "bar", "fnord", "blubb"]}
-    item2 = { :name => "item2", :sets => ["bar", "fnord", "shmoo", "snafu"]}
-    [item1, item2].each do |item|
-      item[:sets].each do |set|
-        @matrix.add_single set, item[:name]
-      end
+  describe "weight" do
+    it "returns the weight configured or a default of 1" do
+      @matrix.weight.should == 1.0  # default weight
+      matrix = Recommendify::InputMatrix.new(redis_prefix: "recommendify-test", key: "mymatrix", weight: 5.0)
+      matrix.weight.should == 5.0
+    end
+  end
+
+  describe "add_set" do
+    it "adds each member of the set to the 'all_items' set" do
+      @matrix.all_items.should_not include("foo", "bar", "fnord", "blubb")
+      @matrix.add_set "item1", ["foo", "bar", "fnord", "blubb"]
+      @matrix.all_items.should include("foo", "bar", "fnord", "blubb")
     end
 
+    it "adds each member of the set to the key's 'sets' set" do
+      @matrix.items_for("item1").should_not include("foo", "bar", "fnord", "blubb")
+      @matrix.add_set "item1", ["foo", "bar", "fnord", "blubb"]
+      @matrix.items_for("item1").should include("foo", "bar", "fnord", "blubb")
+    end
+
+    it "adds the key to each set member's 'items' set" do
+      @matrix.sets_for("foo").should_not include("item1")
+      @matrix.sets_for("bar").should_not include("item1")
+      @matrix.sets_for("fnord").should_not include("item1")
+      @matrix.sets_for("blubb").should_not include("item1")
+      @matrix.add_set "item1", ["foo", "bar", "fnord", "blubb"]
+      @matrix.sets_for("foo").should include("item1")
+      @matrix.sets_for("bar").should include("item1")
+      @matrix.sets_for("fnord").should include("item1")
+      @matrix.sets_for("blubb").should include("item1")
+    end
+  end
+
+  describe "add_single" do
+    it "adds the item to the 'all_items' set" do
+      @matrix.all_items.should_not include("foo")
+      @matrix.add_single "item1", "foo"
+      @matrix.all_items.should include("foo")
+    end
+
+    it "adds the item to the key's 'sets' set" do
+      @matrix.items_for("item1").should_not include("foo")
+      @matrix.add_single "item1", "foo"
+      @matrix.items_for("item1").should include("foo")
+    end
+
+    it "adds the key to the item's 'items' set" do
+      @matrix.sets_for("foo").should_not include("item1")
+      @matrix.add_single "item1", "foo"
+      @matrix.sets_for("foo").should include("item1")
+    end
+  end
+
+  it "should calculate the correct jaccard index" do
+    @matrix.add_set "item1", ["foo", "bar", "fnord", "blubb"]
+    @matrix.add_set "item2", ["bar", "fnord", "shmoo", "snafu"]
+    @matrix.add_set "item3", ["bar", "nada", "snafu"]
+
     @matrix.send(:calculate_jaccard,
-      "item1",
-      "item2"
-    ).should == 2.0/6.0
+      "bar",
+      "snafu"
+    ).should == 2.0/3.0
   end
 
   it "should calculate the correct similarity between to items" do
