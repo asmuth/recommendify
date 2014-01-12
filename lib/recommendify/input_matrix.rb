@@ -66,19 +66,20 @@ class Recommendify::InputMatrix
 
   # delete item_id from the matrix
   def delete_item!(item_id)
-    Recommendify.redis.watch(redis_key(:items, item_id), redis_key(:similarities, item_id)) do
-      sets = Recommendify.redis.smembers(redis_key(:items, item_id))
+    Recommendify.redis.srem(redis_key(:all_items), item_id)
+    Recommendify.redis.watch(redis_key(:sets, item_id), redis_key(:similarities, item_id)) do
+      sets = Recommendify.redis.smembers(redis_key(:sets, item_id))
       items = Recommendify.redis.zrange(redis_key(:similarities, item_id), 0, -1)
       Recommendify.redis.multi do |multi|
         sets.each do |set|
-          multi.srem(redis_key(:sets, set), item_id)
+          multi.srem(redis_key(:items, set), item_id)
         end
 
         items.each do |item|
           multi.zrem(redis_key(:similarities, item), item_id)
         end
 
-        multi.del redis_key(:items, item_id), redis_key(:similarities, item_id)
+        multi.del redis_key(:sets, item_id), redis_key(:similarities, item_id)
       end
     end
   end

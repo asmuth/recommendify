@@ -108,6 +108,82 @@ describe Recommendify::InputMatrix do
     end
   end
 
+  describe "similarity" do
+    it "should calculate the correct similarity between two items" do
+      add_two_item_test_data!(@matrix)
+      @matrix.process!
+      @matrix.similarity("fnord", "blubb").should == 0.4
+      @matrix.similarity("blubb", "fnord").should == 0.4
+    end
+  end
+
+  describe "similarities_for" do
+    it "should calculate all similarities for an item (1/3)" do
+      add_three_item_test_data!(@matrix)
+      @matrix.process!
+      res = @matrix.similarities_for("fnord", true)
+      res.length.should == 2
+      res[0].should == ["shmoo", 0.75]
+      res[1].should == ["blubb", 0.4]
+    end
+
+    it "should calculate all similarities for an item (2/3)" do
+      add_three_item_test_data!(@matrix)
+      @matrix.process!
+      res = @matrix.similarities_for("shmoo", true)
+      res.length.should == 2
+      res[0].should == ["fnord", 0.75]
+      res[1].should == ["blubb", 0.2]
+    end
+
+
+    it "should calculate all similarities for an item (3/3)" do
+      add_three_item_test_data!(@matrix)
+      @matrix.process!
+      res = @matrix.similarities_for("blubb", true)
+      res.length.should == 2
+      res[0].should == ["fnord", 0.4]
+      res[1].should == ["shmoo", 0.2]
+    end
+  end
+
+  describe "delete_item!" do
+    before do
+      @matrix.add_set "item1", ["foo", "bar", "fnord", "blubb"]
+      @matrix.add_set "item2", ["foo", "bar", "snafu", "nada"]
+      @matrix.add_set "item3", ["nada", "other"]
+      @matrix.process!
+    end
+
+    it "should delete the item from sets it is in" do
+      @matrix.items_for("item1").should include("bar")
+      @matrix.items_for("item2").should include("bar")
+      @matrix.sets_for("bar").should include("item1", "item2")
+      @matrix.delete_item!("bar")
+      @matrix.items_for("item1").should_not include("bar")
+      @matrix.items_for("item2").should_not include("bar")
+      @matrix.sets_for("bar").should be_empty
+    end
+
+    it "should delete the cached similarities for the item" do
+      @matrix.similarities_for("bar").should_not be_empty
+      @matrix.delete_item!("bar")
+      @matrix.similarities_for("bar").should be_empty
+    end
+
+    it "should delete the item from other cached similarities" do
+      @matrix.similarities_for("foo").should include("bar")
+      @matrix.delete_item!("bar")
+      @matrix.similarities_for("foo").should_not include("bar")
+    end
+
+    it "should delete the item from the all_items set" do
+      @matrix.all_items.should include("bar")
+      @matrix.delete_item!("bar")
+      @matrix.all_items.should_not include("bar")
+    end
+  end
+
   it "should calculate the correct jaccard index" do
     @matrix.add_set "item1", ["foo", "bar", "fnord", "blubb"]
     @matrix.add_set "item2", ["bar", "fnord", "shmoo", "snafu"]
@@ -117,41 +193,6 @@ describe Recommendify::InputMatrix do
       "bar",
       "snafu"
     ).should == 2.0/3.0
-  end
-
-  it "should calculate the correct similarity between to items" do
-    add_two_item_test_data!(@matrix)
-    @matrix.process!
-    @matrix.similarity("fnord", "blubb").should == 0.4
-    @matrix.similarity("blubb", "fnord").should == 0.4
-  end
-
-  it "should calculate all similarities for an item (1/3)" do
-    add_three_item_test_data!(@matrix)
-    @matrix.process!
-    res = @matrix.similarities_for("fnord", true)
-    res.length.should == 2
-    res.should include ["shmoo", 0.75]
-    res.should include ["blubb", 0.4]
-  end
-
-  it "should calculate all similarities for an item (2/3)" do
-    add_three_item_test_data!(@matrix)
-    @matrix.process!
-    res = @matrix.similarities_for("shmoo", true)
-    res.length.should == 2
-    res.should include ["blubb", 0.2]
-    res.should include ["fnord", 0.75]
-  end
-
-
-  it "should calculate all similarities for an item (3/3)" do
-    add_three_item_test_data!(@matrix)
-    @matrix.process!
-    res = @matrix.similarities_for("blubb", true)
-    res.length.should == 2
-    res.should include ["shmoo", 0.2]
-    res.should include ["fnord", 0.4]
   end
 
 private
