@@ -1,10 +1,10 @@
 require "rspec"
 require "redis"
+require "pry"
 
 require ::File.expand_path('../../lib/recommendify', __FILE__)
 
 require ::File.expand_path('../input_matrix_shared.rb', __FILE__)
-require ::File.expand_path('../cc_matrix_shared.rb', __FILE__)
 
 def flush_redis!
   Recommendify.redis = Redis.new
@@ -13,7 +13,7 @@ def flush_redis!
   end
 end
 
-class Recommendify::Base
+module Recommendify::Base
 
   def redis_prefix
     "recommendify-test"
@@ -22,15 +22,15 @@ class Recommendify::Base
 end
 
 
-class TestRecommender < Recommendify::Base
+class TestRecommender
+  include Recommendify::Base
 
-  input_matrix :jaccard_one, 
-    :similarity_func => :jaccard
+  input_matrix :jaccard_one
 
 end
 
 class Recommendify::TestInputMatrix
-  
+
   def initialize(opts)
   	@opts = opts
   end
