@@ -39,8 +39,7 @@ describe Recommendify::Base do
   end
 
   describe "process_item!" do
-
-    it "should call similarities_for on each input_matrix" do
+    it "should call process_item! on each input_matrix" do
       BaseRecommender.input_matrix(:myfirstinput)
       BaseRecommender.input_matrix(:mysecondinput)
       sm = BaseRecommender.new
@@ -49,7 +48,7 @@ describe Recommendify::Base do
       sm.process_item!("fnorditem")
     end
 
-    it "should call similarities_for on each input_matrix and add all outputs to the similarity matrix" do
+    it "should call process_item! on each input_matrix and add all outputs to the similarity matrix" do
       BaseRecommender.input_matrix(:myfirstinput)
       BaseRecommender.input_matrix(:mysecondinput)
       sm = BaseRecommender.new
@@ -58,7 +57,7 @@ describe Recommendify::Base do
       sm.process_item!("fnorditem")
     end
 
-    it "should call similarities_for on each input_matrix and add all outputs to the similarity matrix with weight" do
+    it "should call process_item! on each input_matrix and add all outputs to the similarity matrix with weight" do
       BaseRecommender.input_matrix(:myfirstinput, :weight => 4.0)
       BaseRecommender.input_matrix(:mysecondinput)
       sm = BaseRecommender.new
@@ -66,7 +65,9 @@ describe Recommendify::Base do
       sm.mysecondinput.should_receive(:process_item!).and_return([["fooitem",0.75], ["baritem", 1.0]])
       sm.process_item!("fnorditem")
     end
+  end
 
+  describe "all_items" do
     it "should retrieve all items from all input matrices" do
       BaseRecommender.input_matrix(:anotherinput)
       BaseRecommender.input_matrix(:yetanotherinput)
@@ -74,10 +75,7 @@ describe Recommendify::Base do
       sm.anotherinput.add_set('a', ["foo", "bar"])
       sm.yetanotherinput.add_set('b', ["fnord", "shmoo"])
       sm.all_items.length.should == 4
-      sm.all_items.should include("foo")
-      sm.all_items.should include("bar")
-      sm.all_items.should include("fnord")
-      sm.all_items.should include("shmoo")
+      sm.all_items.should include("foo", "bar", "fnord", "shmoo")
     end
 
     it "should retrieve all items from all input matrices (uniquely)" do
@@ -87,15 +85,11 @@ describe Recommendify::Base do
       sm.anotherinput.add_set('a', ["foo", "bar"])
       sm.yetanotherinput.add_set('b', ["fnord", "bar"])
       sm.all_items.length.should == 3
-      sm.all_items.should include("foo")
-      sm.all_items.should include("bar")
-      sm.all_items.should include("fnord")
+      sm.all_items.should include("foo", "bar", "fnord")
     end
-
   end
 
   describe "process!" do
-
     it "should call process_item for all input_matrix.all_items's" do
       BaseRecommender.input_matrix(:anotherinput)
       BaseRecommender.input_matrix(:yetanotherinput)
@@ -108,13 +102,33 @@ describe Recommendify::Base do
     end
   end
 
-  describe "similarities_for(item_id)" do
+  describe "process_predictions" do
+    it "should do something"
+  end
 
+  describe "predictions_for" do
+    it "should do something"
+  end
+
+  describe "similarities_for(item_id)" do
     it "should not throw exception for non existing items" do
       sm = BaseRecommender.new
       sm.similarities_for("not_existing_item").length.should == 0
     end
+  end
 
+  describe "sets_for" do
+    it "should return all the sets the given item is in" do
+      BaseRecommender.input_matrix(:set1)
+      BaseRecommender.input_matrix(:set2)
+      sm = BaseRecommender.new
+      sm.set1.add_set "item1", ["foo", "bar"]
+      sm.set1.add_set "item2", ["nada", "bar"]
+      sm.set2.add_set "item3", ["bar", "other"]
+      sm.sets_for("bar").length.should == 3
+      sm.sets_for("bar").should include("item1", "item2", "item3")
+      sm.sets_for("other").should == ["item3"]
+    end
   end
 
   describe "delete_item!" do

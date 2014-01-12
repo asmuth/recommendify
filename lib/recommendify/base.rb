@@ -104,7 +104,7 @@ module Recommendify::Base
   end
 
   def sets_for(item)
-    keys = input_matrices.map{ |k,m| m.redis_key(:items, item) }
+    keys = input_matrices.map{ |k,m| m.redis_key(:sets, item) }
     Recommendify.redis.sunion keys
   end
 
