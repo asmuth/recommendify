@@ -132,7 +132,6 @@ describe Recommendify::Base do
   end
 
   describe "delete_item!" do
-
     it "should call delete_item on each input_matrix" do
       BaseRecommender.input_matrix(:myfirstinput)
       BaseRecommender.input_matrix(:mysecondinput)
@@ -141,11 +140,5 @@ describe Recommendify::Base do
       sm.mysecondinput.should_receive(:delete_item!).with("fnorditem")
       sm.delete_item!("fnorditem")
     end
-
-    it "should delete the item from the similarity matrix"
-
-    it "should delete all occurences of the item in other similarity sets from the similarity matrix"
-
   end
-
 end
