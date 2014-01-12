@@ -66,6 +66,48 @@ describe Recommendify::InputMatrix do
     end
   end
 
+  describe "all_items" do
+    it "returns all items across all sets in the input matrix" do
+      @matrix.add_set "item1", ["foo", "bar", "fnord", "blubb"]
+      @matrix.add_set "item2", ["foo", "bar", "snafu", "nada"]
+      @matrix.add_set "item3", ["nada"]
+      @matrix.all_items.should include("foo", "bar", "fnord", "blubb", "snafu", "nada")
+      @matrix.all_items.length.should == 6
+    end
+  end
+
+  describe "items_for" do
+    it "returns the items in the given set ID" do
+      @matrix.add_set "item1", ["foo", "bar", "fnord", "blubb"]
+      @matrix.items_for("item1").should include("foo", "bar", "fnord", "blubb")
+      @matrix.add_set "item2", ["foo", "bar", "snafu", "nada"]
+      @matrix.items_for("item2").should include("foo", "bar", "snafu", "nada")
+      @matrix.items_for("item1").should_not include("snafu", "nada")
+    end
+  end
+
+  describe "sets_for" do
+    it "returns the set IDs the given item is in" do
+      @matrix.add_set "item1", ["foo", "bar", "fnord", "blubb"]
+      @matrix.add_set "item2", ["foo", "bar", "snafu", "nada"]
+      @matrix.sets_for("foo").should include("item1", "item2")
+      @matrix.sets_for("snafu").should == ["item2"]
+    end
+  end
+
+  describe "related_items" do
+    it "returns the items in sets the given item is also in" do
+      @matrix.add_set "item1", ["foo", "bar", "fnord", "blubb"]
+      @matrix.add_set "item2", ["foo", "bar", "snafu", "nada"]
+      @matrix.add_set "item3", ["nada", "other"]
+      @matrix.related_items("bar").should include("foo", "fnord", "blubb", "snafu", "nada")
+      @matrix.related_items("bar").length.should == 5
+      @matrix.related_items("other").should == ["nada"]
+      @matrix.related_items("snafu").should include("foo", "bar", "nada")
+      @matrix.related_items("snafu").length.should == 3
+    end
+  end
+
   it "should calculate the correct jaccard index" do
     @matrix.add_set "item1", ["foo", "bar", "fnord", "blubb"]
     @matrix.add_set "item2", ["bar", "fnord", "shmoo", "snafu"]
