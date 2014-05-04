@@ -22,6 +22,7 @@
  */
 #include <stdlib.h>
 #include <assert.h>
+#include <random>
 #include "minhash.h"
 
 using namespace recommendify;
@@ -39,6 +40,40 @@ void testGenerateParameters() {
   }
 }
 
+void testMinHash() {
+  uint64_t p, q;
+  std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> params;
+  std::vector<std::vector<uint64_t>> psets;
+  std::vector<std::vector<std::string>> pset_signatures;
+  std::mt19937 prng((std::random_device())());
+  std::uniform_int_distribution<> id_dist(44444, 999999);
+  std::uniform_int_distribution<> card_dist(4, 50);
+
+  p = 4;
+  q = 10;
+
+  MinHash::generateParameters(params, p * q);
+  MinHash minhash(p, q, params);
+
+  for (int j = 0; j < 100; ++j) {
+    std::vector<uint64_t> pset;
+    std::vector<std::string> signature;
+
+    for (int i = card_dist(prng); i > 0; --i) {
+      pset.push_back(id_dist(prng));
+    }
+
+    minhash.computeHashSignatures(pset, signature);
+
+    pset_signatures.push_back(signature);
+    psets.push_back(pset);
+  }
+
+  for (auto pset : psets) {
+  }
+}
+
 int main() {
   testGenerateParameters();
+  testMinHash();
 }
