@@ -41,10 +41,11 @@ namespace recommendify {
  *
  * The P*Q required permutations of the input set are constructed by hashing
  * the input set with P*Q different hash functions. This is done using
- * tabulation hashing and a list of P*Q different parameter tuples (a,b,p).
+ * tabulation hashing and a list of P*Q different parameter tuples (a,b,m).
  *
- *    h(x) = (ax + b) % p
+ *    h(x) = (ax + b) % m
  *
+ * All methods of this class are threadsafe.
  */
 class MinHash : public LSH {
 public:
@@ -56,7 +57,7 @@ public:
    * each signature and how many signatures will be calculated per input set
    * respectively. The total number of computed hashes will be p * q.
    *
-   * This constructor requires a list of p*q parameter tuples (a,b,p) for the
+   * This constructor requires a list of p*q parameter tuples (a,b,m) for the
    * tabulation hash functions.
    *
    * Good values to start experimenting are:
@@ -75,15 +76,30 @@ public:
   MinHash(MinHash& copy) = delete;
 
   /**
+   * Generate a list of N parameter sets (a,b,m) for tabulation hashing and
+   * store them in the destination vector.
+   *
+   * @param n the number of parameter tuples to generate
+   * @param m a large prime number
+   */
+  static void generateParameters(
+      std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& destination,
+      uint64_t n,
+      uint64_t m = 0x7fffffff);
+
+  /**
    * Compute a list of hash signatures for the input item set and store them in
-   * the destination vector
+   * the destination vector.
+   *
+   * This will return Q binary strings consisting of P concatenated minhash
+   * values each into the destination vector
    */
   void computeHashSignatures(
       const std::vector<uint64_t>& input_set,
       std::vector<std::string>& dest) const;
 
   /**
-   * Returns the tabulation hashing parameter sets ({a,b,p} tuples) into the 
+   * Returns the tabulation hashing parameter sets ({a,b,m} tuples) into the
    * destination vector
    */
   void getCoefficients(
@@ -102,6 +118,19 @@ public:
 protected:
 
   std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> params_;
+  uint64_t p_;
+  uint64_t q_;
+
+  /**
+   * Compute a single minhash for an input set using one of the permutations /
+   * parameter sets
+   *
+   * @param input_set the input set to compute the minhash for
+   * @param index     the index of the parameter tuple to be used
+   */
+  uint64_t computeMinHash(
+      const std::vector<uint64_t>& input_set,
+      size_t index) const;
 
 };
 

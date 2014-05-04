@@ -26,10 +26,19 @@ project(recommendify)
 enable_testing()
 set(CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++")
 
-# librecommendify
-set(LIBRECOMMENDIFY_TARGET librecommendify)
-file(GLOB LIBRECOMMENDIFY_SOURCES src/recommendify/*.cc src/recommendify/*.h)
-add_library(${LIBRECOMMENDIFY_TARGET} SHARED ${LIBRECOMMENDIFY_SOURCES})
 
-# librecommendify test
-#add_test(librecommendify_test librecommendify_test)
+# librecommendify
+file(GLOB LIBRECOMMENDIFY_SOURCES src/recommendify/*.cc src/recommendify/*.h)
+file(GLOB LIBRECOMMENDIFY_TEST_SOURCES src/recommendify/*_test.cc)
+list(REMOVE_ITEM LIBRECOMMENDIFY_SOURCES ${LIBRECOMMENDIFY_TEST_SOURCES})
+add_library(recommendify SHARED ${LIBRECOMMENDIFY_SOURCES})
+
+# librecommendify tests
+foreach(f ${LIBRECOMMENDIFY_TEST_SOURCES})
+    string(REGEX REPLACE ".*recommendify/(.*)(_test\\.cc)$" "\\1" TEST_NAME ${f})
+    string(REGEX REPLACE "[^a-z]" "" TEST_NAME ${TEST_NAME})
+    set(TEST_TARGET recommendify_test_${TEST_NAME})
+    add_executable(${TEST_TARGET} ${LIBRECOMMENDIFY_TEST_SOURCES})
+    target_link_libraries(${TEST_TARGET} recommendify)
+    add_test(${TEST_NAME} ${TEST_TARGET})
+endforeach(f)

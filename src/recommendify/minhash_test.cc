@@ -22,37 +22,23 @@
  */
 #include <stdlib.h>
 #include <assert.h>
-#include <random>
 #include "minhash.h"
 
-namespace recommendify {
+using namespace recommendify;
 
-MinHash::MinHash(
-    uint64_t p,
-    uint64_t q,
-    const std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& params) :
-    params_(params) {
-  assert(params_.size() == p * q);
-};
+void testGenerateParameters() {
+  std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> params;
 
-void MinHash::generateParameters(
-    std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& destination,
-    uint64_t n,
-    uint64_t m /* = 0x7fffffff */) {
-  uint64_t i;
+  MinHash::generateParameters(params, 8);
+  assert(params.size() == 8);
 
-  std::mt19937 prng((std::random_device())());
-  std::uniform_int_distribution<> dist(1, m - 1);
-
-  for (i = 0; i < n; ++i) {
-    uint64_t a, b;
-
-    a = dist(prng);
-    b = dist(prng);
-
-    destination.push_back(std::tuple<uint64_t, uint64_t, uint64_t>(
-        a, b, m));
+  for (auto param : params) {
+    assert(std::get<0>(param) <  0x7fffffff);
+    assert(std::get<1>(param) <  0x7fffffff);
+    assert(std::get<2>(param) == 0x7fffffff);
   }
 }
 
+int main() {
+  testGenerateParameters();
 }
