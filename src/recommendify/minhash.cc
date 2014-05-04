@@ -25,8 +25,9 @@
 
 namespace recommendify {
 
-MinHash::MinHash(uint64_t p, uint64_t q) {
-
-}
-
+MinHash::MinHash(
+    uint64_t p,
+    uint64_t q,
+    const std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& params) :
+    params_(params) {};
 }

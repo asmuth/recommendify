@@ -20,6 +20,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef _RECOMMENDIFY_LSH_H
+#define _RECOMMENDIFY_LSH_H
+
 namespace recommendify {
 
 /**
@@ -29,10 +32,10 @@ namespace recommendify {
  *  - MinHash (http://en.wikipedia.org/wiki/MinHash)
  *
  */
-
 class LSH {
 public:
 
 };
 
 }
+#endif

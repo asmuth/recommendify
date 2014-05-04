@@ -20,16 +20,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef _RECOMMENDIFY_MINHASH_H
+#define _RECOMMENDIFY_MINHASH_H
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <vector>
+#include <tuple>
 #include <string>
 #include "lsh.h"
 
 namespace recommendify {
 
+/**
+ * An implementation of the MinHash similiarity hashing scheme. This class
+ * fingerprints preference sets of uint64 ids by assigning each preference set
+ * fingerprint Q different hash signatures. Each hash signature is obtained by
+ * concatting the minimum values of P min-wise independent permutations of the
+ * input set.
+ *
+ * The P*Q required permutations of the input set are constructed by hashing
+ * the input set with P*Q different hash functions. This is done using
+ * tabulation hashing and a list of P*Q different parameter tuples (a,b,p).
+ *
+ *    h(x) = (ax + b) % p
+ *
+ */
 class MinHash : public LSH {
-
 public:
 
   /**
@@ -39,15 +56,22 @@ public:
    * each signature and how many signatures will be calculated per input set
    * respectively. The total number of computed hashes will be p * q.
    *
+   * This constructor requires a list of p*q parameter tuples (a,b,p) for the
+   * tabulation hash functions.
+   *
    * Good values to start experimenting are:
    *   p = {1..4}
    *   q = {1..100}
    *
-   * @param p The number of individual minhashes that make up a single hash
-   *          signature
-   * @param q The number of hash signatures to calculate per input set
+   * @param p      The number of individual minhashes per hash signature
+   * @param q      The number of hash signatures to calculate per input set
+   * @param params The list of parameters for the p*q tabulation hash functions
    */
-  MinHash(uint64_t p, uint64_t q);
+  MinHash(
+      uint64_t p,
+      uint64_t q,
+      const std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& params);
+
   MinHash(MinHash& copy) = delete;
 
   /**
@@ -58,6 +82,37 @@ public:
       const std::vector<uint64_t>& input_set,
       std::vector<std::string>& dest) const;
 
+  /**
+   * Returns the tabulation hashing parameter sets ({a,b,p} tuples) into the 
+   * destination vector
+   */
+  void getCoefficients(
+      std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& destination) const;
+
+  /**
+   * returns P, the number of minhashes per signature
+   */
+  uint64_t getP() const;
+
+  /**
+   * returns Q, the number signatures per input set
+   */
+  uint64_t getQ() const;
+
+protected:
+
+  std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> params_;
+
+  /**
+   * Get the next value from one of the random number sequence with a provided x
+   *
+   * @param x     the x parameter from the equation above
+   * @param index the index of the coefficient tupe to be used (valid values
+   *              are 0..numberOfCoefficients() - 1)
+   */
+  uint64_t getNextValue(uint64_t x, size_t index);
+
 };
 
 }
+#endif
