@@ -25,6 +25,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <unordered_map>
+#include <vector>
+#include <set>
 #include "recommendify/minhashrecommender.h"
 
 /**
@@ -42,18 +44,49 @@ void readDatFile(const char* filename,
  * Our "database"
  */
 static std::unordered_map<uint64_t, std::string> movie_names_by_id;
+static std::unordered_map<uint64_t, std::set<uint64_t>> preference_sets;
 
 int main() {
+  /* Input file movies.dat has the format (movie_id,movie_name,movie_tags) */
   readDatFile("./movies.dat", [] (const std::vector<std::string>& line) {
     movie_names_by_id[atoi(line[0].c_str())] = line[1];
   });
+
+  /* Input file ratings.dat has the format (user_id,movie_id,rating,time). */
+  readDatFile("./ratings.dat", [] (const std::vector<std::string>& line) {
+    /* Construct binary ratings / preference sets by only considering votes with
+       a score greater than or equal to 3 */
+    if (atoi(line[2].c_str()) < 3) {
+      return;
+    }
+
+    preference_sets[atoi(line[0].c_str())].insert(
+      atoi(line[1].c_str()));
+  });
+
+  /* Set up the minhash processor with random parameters */
+  uint64_t p = 4, q = 10;
+  std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> minhash_params;
+  MinHash::generateParameters(minhash_params, p * q);
+  MinHash minhash(p, q, minhash_params);
+  MinHashRecommender recommender(
+    std::move(minhash),
+    MemoryBackend());
+
+  /* Add all preference sets to the recommender */
+  for (const auto& pset : preference_sets) {
+    ItemSet pset_is(std::vector<uint64_t>(
+        pset.second.begin(), pset.second.end()));
+
+    recommender.addPreferenceSet(pset_is);
+  }
 }
 
 
 /**
  * Helper code to read the .dat/csv files
  */
-#define CSV_READ_BUF_SIZE 1024
+#define CSV_READ_BUF_SIZE 4096
 void readDatFile(const char* filename,
     std::function<void(const std::vector<std::string>&)> callback) {
   std::vector<std::string> line;

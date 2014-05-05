@@ -74,7 +74,13 @@ public:
       uint64_t q,
       const std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& params);
 
-  MinHash(MinHash& copy) = delete;
+  /**
+   * Copy a minhash processor
+   */
+  MinHash(const MinHash& other) :
+      p_(other.p_),
+      q_(other.q_),
+      params_(other.params_) {}
 
   /**
    * Generate a list of N parameter sets (a,b,m) for tabulation hashing and

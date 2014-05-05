@@ -53,12 +53,13 @@ namespace recommendify {
 class UserRecommender {
 public:
 
+  UserRecommender() {}
   UserRecommender(UserRecommender& copy) = delete;
 
   /**
    * Add a preference set to the recommender
    */
-  virtual void addPreferenceSet(const ItemSet& preference_set);
+  virtual void addPreferenceSet(const ItemSet& preference_set) = 0;
 
   /**
    * Retrieve a list of up to max_items ranked items most similar to the query
@@ -67,7 +68,7 @@ public:
   virtual void getRecommendations(
       const ItemSet& query_point,
       size_t max_items,
-      RankedItemList& result) const;
+      RankedItemList& result) const = 0;
 
 };
 

@@ -45,3 +45,4 @@ endforeach(f)
 
 # example/movielens_minhash
 add_executable(example_movielens_minhash example/movielens_minhash/movielens_minhash.cc)
+target_link_libraries(example_movielens_minhash recommendify)

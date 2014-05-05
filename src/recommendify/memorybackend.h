@@ -20,58 +20,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef _RECOMMENDIFY_MINHASHRECOMMENDER_H
-#define _RECOMMENDIFY_MINHASHRECOMMENDER_H
+#ifndef _RECOMMENDIFY_MEMORYBACKEND_H
+#define _RECOMMENDIFY_MEMORYBACKEND_H
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <unordered_map>
 #include "itemset.h"
-#include "minhash.h"
-#include "userrecommender.h"
-#include "memorybackend.h"
 
 namespace recommendify {
 
 /**
- * The minhash recommender generates personalized recommendations by assigning
- * each preference set a number of fingerprints using the MinHash similarity
- * hashing scheme (see minhash.h).
- *
+ * A storage backend that keeps all data in memory
  */
-class MinHashRecommender : public UserRecommender {
+class MemoryBackend {
 public:
 
   /**
-   * Construct a new MinHashRecommender. You must provide a MinHash instance
-   * (see minhash.h) and a storage backend. Takes ownership of the minhash and
-   * the backend.
+   * Create a new MemoryBackend
    */
-  MinHashRecommender(
-      MinHash&& minhash,
-      MemoryBackend&& backend) :
-      minhash_(std::move(minhash)),
-      backend_(std::move(backend)) {};
-
-  MinHashRecommender(MinHashRecommender& copy) = delete;
+  MemoryBackend() {}
 
   /**
-   * Add a preference set to the recommender
+   * Move a memory backend
    */
-  virtual void addPreferenceSet(const ItemSet& preference_set) override;
+  MemoryBackend(MemoryBackend&& other) :
+      data_(std::move(other.data_)) {}
+
+  MemoryBackend(MemoryBackend& copy) = delete;
 
   /**
-   * Retrieve a list of up to max_items ranked items most similar to the query
-   * point and return them into the provided ranked item list
+   * Increment the score of an element in a ranked list by one
    */
-  virtual void getRecommendations(
-      const ItemSet& query_point,
-      size_t max_items,
-      RankedItemList& result) const override;
+  void increment(
+      const std::string& list_key,
+      uint64_t item_key);
 
 protected:
 
-  const MinHash minhash_;
-  MemoryBackend backend_;
+  std::unordered_map<std::string, RankedItemList> data_;
 
 };
 
