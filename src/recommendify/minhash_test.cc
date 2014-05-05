@@ -34,7 +34,9 @@ void testGenerateParameters() {
   assert(params.size() == 8);
 
   for (auto& param : params) {
+    assert(std::get<0>(param) >  0);
     assert(std::get<0>(param) <  0x7fffffff);
+    assert(std::get<1>(param) >  0);
     assert(std::get<1>(param) <  0x7fffffff);
     assert(std::get<2>(param) == 0x7fffffff);
   }
@@ -43,7 +45,7 @@ void testGenerateParameters() {
 void testMinHash() {
   uint64_t p, q;
   std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> params;
-  std::vector<std::vector<uint64_t>> psets;
+  std::vector<ItemSet> psets;
   std::vector<std::vector<Fingerprint>> pset_fingerprints;
   std::mt19937 prng((std::random_device())());
   std::uniform_int_distribution<> id_dist(44444, 999999);
@@ -56,12 +58,14 @@ void testMinHash() {
   MinHash minhash(p, q, params);
 
   for (int j = 0; j < 100; ++j) {
-    std::vector<uint64_t> pset;
+    std::vector<uint64_t> pset_data;
     std::vector<Fingerprint> fingerprints;
 
     for (int i = card_dist(prng); i > 0; --i) {
-      pset.push_back(id_dist(prng));
+      pset_data.push_back(id_dist(prng));
     }
+
+    ItemSet pset(std::move(pset_data));
 
     minhash.computeFingerprints(pset, fingerprints);
 

@@ -58,7 +58,7 @@ void MinHash::generateParameters(
 }
 
 void MinHash::computeFingerprints(
-    const std::vector<uint64_t>& input_set,
+    const ItemSet& input_set,
     std::vector<Fingerprint>& dest) const {
 
   for (int q = 0; q < q_; ++q) {
@@ -73,11 +73,11 @@ void MinHash::computeFingerprints(
 }
 
 uint64_t MinHash::computeMinHash(
-    const std::vector<uint64_t>& input_set,
+    const ItemSet& input_set,
     size_t index) const {
   uint64_t min = 0xffffffffffffffff;
 
-  for (const uint64_t item : input_set) {
+  for (const uint64_t item : input_set.getItems()) {
     /* h(x) = (ax + b) % m */
     uint64_t h = (
         std::get<0>(params_[index]) *

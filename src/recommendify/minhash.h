@@ -30,6 +30,7 @@
 #include <string>
 #include "lsh.h"
 #include "fingerprint.h"
+#include "itemset.h"
 
 namespace recommendify {
 
@@ -95,7 +96,7 @@ public:
    * values each into the destination vector
    */
   void computeFingerprints(
-      const std::vector<uint64_t>& input_set,
+      const ItemSet& input_set,
       std::vector<Fingerprint>& dest) const;
 
   /**
@@ -129,7 +130,7 @@ protected:
    * @param index     the index of the parameter tuple to be used
    */
   uint64_t computeMinHash(
-      const std::vector<uint64_t>& input_set,
+      const ItemSet& input_set,
       size_t index) const;
 
 };
