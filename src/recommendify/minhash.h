@@ -102,7 +102,7 @@ public:
    * Returns the tabulation hashing parameter sets ({a,b,m} tuples) into the
    * destination vector
    */
-  void getCoefficients(
+  void getParameters(
       std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& destination) const;
 
   /**

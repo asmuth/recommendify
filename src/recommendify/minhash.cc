@@ -93,4 +93,20 @@ uint64_t MinHash::computeMinHash(
   return min;
 }
 
+void MinHash::getParameters(
+    std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& destination) const {
+
+  for (const auto& param : params_) {
+    destination.push_back(param);
+  }
+}
+
+uint64_t MinHash::getP() const {
+  return p_;
+}
+
+uint64_t MinHash::getQ() const {
+  return q_;
+}
+
 }

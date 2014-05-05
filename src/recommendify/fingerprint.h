@@ -55,6 +55,24 @@ public:
 
 
   /**
+   * Compare this fingerprint with another fingerprint. Returns true if both
+   * fingerprints match and false of they do not match
+   */
+  bool compareTo(const Fingerprint& other) const {
+    if (data_.size() != other.data_.size()) {
+      return false;
+    }
+
+    for (int i = 0; i < data_.size(); ++i) {
+      if (data_[i] != other.data_[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
    * Return a human readable representation of this fingerprint
    */
   std::string humanReadable() const {

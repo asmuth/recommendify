@@ -33,7 +33,7 @@ void testGenerateParameters() {
   MinHash::generateParameters(params, 8);
   assert(params.size() == 8);
 
-  for (auto param : params) {
+  for (auto& param : params) {
     assert(std::get<0>(param) <  0x7fffffff);
     assert(std::get<1>(param) <  0x7fffffff);
     assert(std::get<2>(param) == 0x7fffffff);
@@ -44,7 +44,7 @@ void testMinHash() {
   uint64_t p, q;
   std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> params;
   std::vector<std::vector<uint64_t>> psets;
-  std::vector<std::vector<Fingerprint>> pset_signatures;
+  std::vector<std::vector<Fingerprint>> pset_fingerprints;
   std::mt19937 prng((std::random_device())());
   std::uniform_int_distribution<> id_dist(44444, 999999);
   std::uniform_int_distribution<> card_dist(4, 50);
@@ -57,28 +57,37 @@ void testMinHash() {
 
   for (int j = 0; j < 100; ++j) {
     std::vector<uint64_t> pset;
-    std::vector<Fingerprint> signatures;
+    std::vector<Fingerprint> fingerprints;
 
     for (int i = card_dist(prng); i > 0; --i) {
       pset.push_back(id_dist(prng));
     }
 
-    minhash.computeFingerprints(pset, signatures);
+    minhash.computeFingerprints(pset, fingerprints);
 
-    for (const auto sig : signatures) {
-      std::string sig_str = sig.humanReadable();
-
-      printf("sig: %s\n", sig_str.c_str());
+    for (const auto& fingerprint : fingerprints) {
+      std::string fingerprint_str = fingerprint.humanReadable();
+      assert(fingerprint_str.size() > 16);
     }
 
-    pset_signatures.push_back(signatures);
+    pset_fingerprints.push_back(fingerprints);
     psets.push_back(pset);
   }
 
-  for (const auto pset : psets) {
-  }
+  params.clear();
+  minhash.getParameters(params);
+  assert(params.size() == p * q);
 
-  assert(false);
+  MinHash minhash2(minhash.getP(), minhash.getQ(), params);
+
+  for (int j = 0; j < psets.size(); ++j) {
+    std::vector<Fingerprint> new_fingerprints;
+    minhash2.computeFingerprints(psets[j], new_fingerprints);
+
+    for (int i = 0; i < pset_fingerprints[j].size(); i++) {
+      assert(new_fingerprints[i].compareTo(pset_fingerprints[j][i]));
+    }
+  }
 }
 
 int main() {
