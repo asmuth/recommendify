@@ -29,15 +29,15 @@
 #include <tuple>
 #include <string>
 #include "lsh.h"
+#include "fingerprint.h"
 
 namespace recommendify {
 
 /**
  * An implementation of the MinHash similiarity hashing scheme. This class
- * fingerprints preference sets of uint64 ids by assigning each preference set
- * fingerprint Q different hash signatures. Each hash signature is obtained by
- * concatting the minimum values of P min-wise independent permutations of the
- * input set.
+ * fingerprints preference sets of uint64 ids by assigning each input item set
+ * Q different fingerprints. Each fingerprint is obtained by concatting the
+ * minimum values of P min-wise independent permutations of the input set.
  *
  * The P*Q required permutations of the input set are constructed by hashing
  * the input set with P*Q different hash functions. This is done using
@@ -54,18 +54,18 @@ public:
    * Create a new MinHash processor.
    *
    * The two params p and q control how many minhashes will be calculated for
-   * each signature and how many signatures will be calculated per input set
-   * respectively. The total number of computed hashes will be p * q.
+   * each fingerprint and how many fingerprints will be calculated per input set
+   * respectively. The total number of computed minhashes will be p * q.
    *
-   * This constructor requires a list of p*q parameter tuples (a,b,m) for the
+   * This constructor requires a list of p * q parameter tuples (a,b,m) for the
    * tabulation hash functions.
    *
    * Good values to start experimenting are:
    *   p = {1..4}
    *   q = {1..100}
    *
-   * @param p      The number of individual minhashes per hash signature
-   * @param q      The number of hash signatures to calculate per input set
+   * @param p      The number of individual minhashes per fingerprint
+   * @param q      The number of fingerprints to calculate per input set
    * @param params The list of parameters for the p*q tabulation hash functions
    */
   MinHash(
@@ -88,15 +88,15 @@ public:
       uint64_t m = 0x7fffffff);
 
   /**
-   * Compute a list of hash signatures for the input item set and store them in
+   * Compute a list of fingerprints for the input item set and store them in
    * the destination vector.
    *
    * This will return Q binary strings consisting of P concatenated minhash
    * values each into the destination vector
    */
-  void computeHashSignatures(
+  void computeFingerprints(
       const std::vector<uint64_t>& input_set,
-      std::vector<std::string>& dest) const;
+      std::vector<Fingerprint>& dest) const;
 
   /**
    * Returns the tabulation hashing parameter sets ({a,b,m} tuples) into the
@@ -106,12 +106,12 @@ public:
       std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& destination) const;
 
   /**
-   * returns P, the number of minhashes per signature
+   * returns P, the number of minhashes per fingerprint
    */
   uint64_t getP() const;
 
   /**
-   * returns Q, the number signatures per input set
+   * returns Q, the number of fingerprints per input set
    */
   uint64_t getQ() const;
 

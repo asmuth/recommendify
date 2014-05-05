@@ -44,7 +44,7 @@ void testMinHash() {
   uint64_t p, q;
   std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> params;
   std::vector<std::vector<uint64_t>> psets;
-  std::vector<std::vector<std::string>> pset_signatures;
+  std::vector<std::vector<Fingerprint>> pset_signatures;
   std::mt19937 prng((std::random_device())());
   std::uniform_int_distribution<> id_dist(44444, 999999);
   std::uniform_int_distribution<> card_dist(4, 50);
@@ -57,20 +57,28 @@ void testMinHash() {
 
   for (int j = 0; j < 100; ++j) {
     std::vector<uint64_t> pset;
-    std::vector<std::string> signature;
+    std::vector<Fingerprint> signatures;
 
     for (int i = card_dist(prng); i > 0; --i) {
       pset.push_back(id_dist(prng));
     }
 
-    minhash.computeHashSignatures(pset, signature);
+    minhash.computeFingerprints(pset, signatures);
 
-    pset_signatures.push_back(signature);
+    for (const auto sig : signatures) {
+      std::string sig_str = sig.humanReadable();
+
+      printf("sig: %s\n", sig_str.c_str());
+    }
+
+    pset_signatures.push_back(signatures);
     psets.push_back(pset);
   }
 
-  for (auto pset : psets) {
+  for (const auto pset : psets) {
   }
+
+  assert(false);
 }
 
 int main() {

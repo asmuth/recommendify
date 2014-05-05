@@ -31,6 +31,8 @@ MinHash::MinHash(
     uint64_t p,
     uint64_t q,
     const std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& params) :
+    p_(p),
+    q_(q),
     params_(params) {
   assert(params_.size() == p * q);
 };
@@ -53,6 +55,42 @@ void MinHash::generateParameters(
     destination.push_back(std::tuple<uint64_t, uint64_t, uint64_t>(
         a, b, m));
   }
+}
+
+void MinHash::computeFingerprints(
+    const std::vector<uint64_t>& input_set,
+    std::vector<Fingerprint>& dest) const {
+
+  for (int q = 0; q < q_; ++q) {
+    std::vector<uint64_t> sig(p_, 0);
+
+    for (int p = 0; p < p_; ++p) {
+      sig[p] = computeMinHash(input_set, q * p_ + p);
+    }
+
+    dest.push_back(Fingerprint(std::move(sig)));
+  }
+}
+
+uint64_t MinHash::computeMinHash(
+    const std::vector<uint64_t>& input_set,
+    size_t index) const {
+  uint64_t min = 0xffffffffffffffff;
+
+  for (const uint64_t item : input_set) {
+    /* h(x) = (ax + b) % m */
+    uint64_t h = (
+        std::get<0>(params_[index]) *
+        item +
+        std::get<1>(params_[index])) % 
+        std::get<2>(params_[index]);
+
+    if (h < min) {
+      min = h;
+    }
+  }
+
+  return min;
 }
 
 }
