@@ -25,6 +25,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 project(recommendify)
 enable_testing()
 set(CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++")
+include_directories(src/)
 
 # librecommendify
 file(GLOB LIBRECOMMENDIFY_SOURCES src/recommendify/*.cc src/recommendify/*.h)
@@ -41,3 +42,6 @@ foreach(f ${LIBRECOMMENDIFY_TEST_SOURCES})
     target_link_libraries(${TEST_TARGET} recommendify)
     add_test(${TEST_NAME} ${TEST_TARGET})
 endforeach(f)
+
+# example/netflix_minhash
+add_executable(example_netflix_minhash example/netflix_minhash/netflix_minhash.cc)
