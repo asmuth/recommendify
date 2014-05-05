@@ -32,8 +32,11 @@ void MinHashRecommender::addPreferenceSet(const ItemSet& preference_set) {
 
   minhash_.computeFingerprints(preference_set, fingerprints);
 
-  for (const auto& fingerprint : fingerprints) {
-    printf("%s\n", fingerprint.humanReadable().c_str());
+  for (const uint64_t item : preference_set.getItems()) {
+    for (const auto& fingerprint : fingerprints) {
+      // FIXPAUL humanReadable is slow slow slow
+      backend_.incrementBy(fingerprint.humanReadable(), item, 1.0f);
+    }
   }
 }
 

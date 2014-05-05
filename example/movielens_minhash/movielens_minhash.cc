@@ -68,9 +68,9 @@ int main() {
   uint64_t p = 4, q = 10;
   std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> minhash_params;
   MinHash::generateParameters(minhash_params, p * q);
-  MinHash minhash(p, q, minhash_params);
+
   MinHashRecommender recommender(
-    std::move(minhash),
+    MinHash(p, q, minhash_params),
     MemoryBackend());
 
   /* Add all preference sets to the recommender */

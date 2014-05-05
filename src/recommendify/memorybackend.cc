@@ -20,33 +20,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef _RECOMMENDIFY_RANKEDITEMLIST_H
-#define _RECOMMENDIFY_RANKEDITEMLIST_H
-
 #include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <unordered_map>
+#include <assert.h>
+#include <random>
+#include "memorybackend.h"
 
 namespace recommendify {
 
-/**
- * A ranked list of items
- */
-class RankedItemList {
-public:
-
-  /**
-   * Increment the score of an item in the ranked list. Will insert the item
-   * into the list if it doesn't exist yet
-   */
-  void incrementItemScore(uint64_t item_key, double value);
-
-protected:
-
-  std::unordered_map<uint64_t, double> data_;
-
-};
+void MemoryBackend::incrementBy(const std::string& list_key, uint64_t item_key,
+    double value) {
+  data_[list_key].incrementItemScore(item_key, value);
+}
 
 }
-#endif

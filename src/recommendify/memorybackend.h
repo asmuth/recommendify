@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <unordered_map>
 #include "itemset.h"
+#include "rankeditemlist.h"
 
 namespace recommendify {
 
@@ -50,11 +51,12 @@ public:
   MemoryBackend(MemoryBackend& copy) = delete;
 
   /**
-   * Increment the score of an element in a ranked list by one
+   * Increment the score of an element in a ranked list
    */
-  void increment(
+  void incrementBy(
       const std::string& list_key,
-      uint64_t item_key);
+      uint64_t item_key,
+      double value);
 
 protected:
 
