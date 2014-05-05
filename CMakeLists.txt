@@ -26,7 +26,6 @@ project(recommendify)
 enable_testing()
 set(CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++")
 
-
 # librecommendify
 file(GLOB LIBRECOMMENDIFY_SOURCES src/recommendify/*.cc src/recommendify/*.h)
 file(GLOB LIBRECOMMENDIFY_TEST_SOURCES src/recommendify/*_test.cc)
