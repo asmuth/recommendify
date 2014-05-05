@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <unordered_map>
 #include <vector>
+#include <random>
 #include <set>
 #include "recommendify/minhashrecommender.h"
 
@@ -39,19 +40,23 @@
 using namespace recommendify;
 void readDatFile(const char* filename,
     std::function<void(const std::vector<std::string>&)> callback);
+void printUserRecos(const ItemSet& query_point);
 
 /**
  * Our "database"
  */
 static std::unordered_map<uint64_t, std::string> movie_names_by_id;
 static std::unordered_map<uint64_t, std::set<uint64_t>> preference_sets;
+static std::vector<uint64_t> user_ids;
 
 int main() {
+  printf("Loading movies.dat...\n");
   /* Input file movies.dat has the format (movie_id,movie_name,movie_tags) */
   readDatFile("./movies.dat", [] (const std::vector<std::string>& line) {
     movie_names_by_id[atoi(line[0].c_str())] = line[1];
   });
 
+  printf("Loading ratings.dat...\n");
   /* Input file ratings.dat has the format (user_id,movie_id,rating,time). */
   readDatFile("./ratings.dat", [] (const std::vector<std::string>& line) {
     /* Construct binary ratings / preference sets by only considering votes with
@@ -60,8 +65,13 @@ int main() {
       return;
     }
 
-    preference_sets[atoi(line[0].c_str())].insert(
-      atoi(line[1].c_str()));
+    uint64_t user_id = atoi(line[0].c_str());
+
+    if (preference_sets.find(user_id) == preference_sets.end()) {
+      user_ids.push_back(user_id);
+    }
+
+    preference_sets[user_id].insert(atoi(line[1].c_str()));
   });
 
   /* Set up the minhash processor with random parameters */
@@ -74,14 +84,41 @@ int main() {
     MemoryBackend());
 
   /* Add all preference sets to the recommender */
+  printf("Importing preference sets...\n");
   for (const auto& pset : preference_sets) {
     ItemSet pset_is(std::vector<uint64_t>(
         pset.second.begin(), pset.second.end()));
 
     recommender.addPreferenceSet(pset_is);
   }
+
+  printf("Recommender ready :)\n");
+
+  /* Sample some random users and print their input sets and recommendations */
+  std::mt19937 prng((std::random_device())());
+
+  for (int i = 0; i < 10;) {
+    std::uniform_int_distribution<> dist(0, user_ids.size() - 1);
+    uint64_t user_id = dist(prng);
+    const auto pset = preference_sets[user_ids[user_id]];
+
+    if (pset.size() < 10) {
+      printUserRecos(ItemSet(std::vector<uint64_t>(pset.begin(), pset.end())));
+      printf("%lu\n", user_id);
+      user_ids.erase(std::find(user_ids.begin(), user_ids.end(), user_id));
+      ++i;
+    }
+  }
 }
 
+void printUserRecos(const ItemSet& query_point) {
+  printf("==== Recommendation ===\n");
+  printf("Input Set:");
+  for (const uint64_t item : query_point.getItems()) {
+    printf("%s, ", movie_names_by_id[item].c_str());
+  }
+  printf("\n");
+}
 
 /**
  * Helper code to read the .dat/csv files
