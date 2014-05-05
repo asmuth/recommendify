@@ -43,5 +43,5 @@ foreach(f ${LIBRECOMMENDIFY_TEST_SOURCES})
     add_test(${TEST_NAME} ${TEST_TARGET})
 endforeach(f)
 
-# example/netflix_minhash
-add_executable(example_netflix_minhash example/netflix_minhash/netflix_minhash.cc)
+# example/movielens_minhash
+add_executable(example_movielens_minhash example/movielens_minhash/movielens_minhash.cc)
