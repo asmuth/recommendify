@@ -1,24 +1,8 @@
 /**
  * This file is part of the "recommendify" project
- *   Copyright (c) 2014 Paul Asmuth <paul@paulasmuth.com>
+ *   Copyright (c) 2011-2014 Paul Asmuth, Google Inc.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Licensed under the MIT license (see LICENSE).
  */
 #ifndef _RECOMMENDIFY_ITEMRECOMMENDER_H
 #define _RECOMMENDIFY_ITEMRECOMMENDER_H
@@ -51,12 +35,13 @@ namespace recommendify {
 class ItemRecommender {
 public:
 
-  ItemRecommender(ItemRecommender& copy) = delete;
+  explicit ItemRecommender() {}
+  explicit ItemRecommender(ItemRecommender& copy) = delete;
 
   /**
    * Add a preference set to the recommender
    */
-  virtual void addPreferenceSet(const ItemSet& preference_set);
+  virtual void addPreferenceSet(const ItemSet& preference_set) = 0;
 
   /**
    * Retrieve a list of up to max_items ranked items most similar to the query
@@ -65,7 +50,7 @@ public:
   virtual void getRecommendations(
     uint64_t item_id,
     size_t max_items,
-    RankedItemList& result) const;
+    RankedItemList* result) const = 0;
 
 };
 
