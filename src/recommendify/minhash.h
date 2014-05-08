@@ -1,24 +1,8 @@
 /**
  * This file is part of the "recommendify" project
- *   Copyright (c) 2014 Paul Asmuth <paul@paulasmuth.com>
+ *   Copyright (c) 2011-2014 Paul Asmuth, Google Inc.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Licensed under the MIT license (see LICENSE).
  */
 #ifndef _RECOMMENDIFY_MINHASH_H
 #define _RECOMMENDIFY_MINHASH_H
@@ -69,7 +53,7 @@ public:
    * @param q      The number of fingerprints to calculate per input set
    * @param params The list of parameters for the p*q tabulation hash functions
    */
-  MinHash(
+  explicit MinHash(
       uint64_t p,
       uint64_t q,
       const std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& params);
@@ -77,7 +61,7 @@ public:
   /**
    * Copy a minhash processor
    */
-  MinHash(const MinHash& other) :
+  explicit MinHash(const MinHash& other) :
       p_(other.p_),
       q_(other.q_),
       params_(other.params_) {}
@@ -89,8 +73,7 @@ public:
    * @param n the number of parameter tuples to generate
    * @param m a large prime number
    */
-  static void generateParameters(
-      std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& destination,
+  static std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> generateParameters(
       uint64_t n,
       uint64_t m = 0x7fffffff);
 
@@ -101,16 +84,13 @@ public:
    * This will return Q binary strings consisting of P concatenated minhash
    * values each into the destination vector
    */
-  void computeFingerprints(
-      const ItemSet& input_set,
-      std::vector<Fingerprint>& dest) const;
+  std::vector<Fingerprint> computeFingerprints(const ItemSet& input_set) const;
 
   /**
-   * Returns the tabulation hashing parameter sets ({a,b,m} tuples) into the
-   * destination vector
+   * Returns the tabulation hashing parameter sets ({a,b,m} tuples)
    */
-  void getParameters(
-      std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& destination) const;
+  const std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>&
+      getParameters() const;
 
   /**
    * returns P, the number of minhashes per fingerprint

@@ -1,24 +1,8 @@
 /**
  * This file is part of the "recommendify" project
- *   Copyright (c) 2014 Paul Asmuth <paul@paulasmuth.com>
+ *   Copyright (c) 2011-2014 Paul Asmuth, Google Inc.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Licensed under the MIT license (see LICENSE).
  */
 #include <stdlib.h>
 #include <assert.h>
@@ -28,9 +12,7 @@
 using namespace recommendify;
 
 void testGenerateParameters() {
-  std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> params;
-
-  MinHash::generateParameters(params, 8);
+  auto params = MinHash::generateParameters(8);
   assert(params.size() == 8);
 
   for (auto& param : params) {
@@ -44,7 +26,6 @@ void testGenerateParameters() {
 
 void testMinHash() {
   uint64_t p, q;
-  std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> params;
   std::vector<ItemSet> psets;
   std::vector<std::vector<Fingerprint>> pset_fingerprints;
   std::mt19937 prng((std::random_device())());
@@ -54,23 +35,21 @@ void testMinHash() {
   p = 4;
   q = 10;
 
-  MinHash::generateParameters(params, p * q);
-  MinHash minhash(p, q, params);
+  MinHash minhash(p, q, MinHash::generateParameters(p * q));
+  assert(minhash.getParameters().size() == p * q);
 
   for (int j = 0; j < 100; ++j) {
     std::vector<uint64_t> pset_data;
-    std::vector<Fingerprint> fingerprints;
 
     for (int i = card_dist(prng); i > 0; --i) {
       pset_data.push_back(id_dist(prng));
     }
 
     ItemSet pset(std::move(pset_data));
-
-    minhash.computeFingerprints(pset, fingerprints);
+    auto fingerprints = minhash.computeFingerprints(pset);
 
     for (const auto& fingerprint : fingerprints) {
-      std::string fingerprint_str = fingerprint.humanReadable();
+      auto fingerprint_str = fingerprint.humanReadable();
       assert(fingerprint_str.size() > 16);
     }
 
@@ -78,15 +57,13 @@ void testMinHash() {
     psets.push_back(pset);
   }
 
-  params.clear();
-  minhash.getParameters(params);
-  assert(params.size() == p * q);
-
-  MinHash minhash2(minhash.getP(), minhash.getQ(), params);
+  MinHash minhash2(
+      minhash.getP(),
+      minhash.getQ(),
+      minhash.getParameters());
 
   for (int j = 0; j < psets.size(); ++j) {
-    std::vector<Fingerprint> new_fingerprints;
-    minhash2.computeFingerprints(psets[j], new_fingerprints);
+    auto new_fingerprints = minhash2.computeFingerprints(psets[j]);
 
     for (int i = 0; i < pset_fingerprints[j].size(); i++) {
       assert(new_fingerprints[i].compareTo(pset_fingerprints[j][i]));

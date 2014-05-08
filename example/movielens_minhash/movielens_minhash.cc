@@ -22,11 +22,14 @@
  */
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <unordered_map>
+#include <algorithm>
 #include <vector>
 #include <random>
+#include <functional>
 #include <set>
 #include "recommendify/minhashrecommender.h"
 
@@ -76,8 +79,7 @@ int main() {
 
   /* Set up the minhash processor with random parameters */
   uint64_t p = 4, q = 10;
-  std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> minhash_params;
-  MinHash::generateParameters(minhash_params, p * q);
+  auto minhash_params = MinHash::generateParameters(p * q);
 
   MinHashRecommender recommender(
     MinHash(p, q, minhash_params),

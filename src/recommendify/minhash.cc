@@ -1,24 +1,8 @@
 /**
  * This file is part of the "recommendify" project
- *   Copyright (c) 2014 Paul Asmuth <paul@paulasmuth.com>
+ *   Copyright (c) 2011-2014 Paul Asmuth, Google Inc.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Licensed under the MIT license (see LICENSE).
  */
 #include <stdlib.h>
 #include <assert.h>
@@ -37,12 +21,12 @@ MinHash::MinHash(
   assert(params_.size() == p * q);
 };
 
-void MinHash::generateParameters(
-    std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& destination,
+
+std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> MinHash::generateParameters(
     uint64_t n,
     uint64_t m /* = 0x7fffffff */) {
   uint64_t i;
-
+  std::vector<std::tuple<uint64_t, uint64_t, uint64_t>> params;
   std::mt19937 prng((std::random_device())());
   std::uniform_int_distribution<> dist(1, m - 1);
 
@@ -52,24 +36,27 @@ void MinHash::generateParameters(
     a = dist(prng);
     b = dist(prng);
 
-    destination.push_back(std::tuple<uint64_t, uint64_t, uint64_t>(
+    params.push_back(std::tuple<uint64_t, uint64_t, uint64_t>(
         a, b, m));
   }
+
+  return params;
 }
 
-void MinHash::computeFingerprints(
-    const ItemSet& input_set,
-    std::vector<Fingerprint>& dest) const {
+std::vector<Fingerprint> MinHash::computeFingerprints(
+    const ItemSet& input_set) const {
+  std::vector<uint64_t> sig(p_, 0);
+  std::vector<Fingerprint> fingerprints;
 
   for (int q = 0; q < q_; ++q) {
-    std::vector<uint64_t> sig(p_, 0);
-
     for (int p = 0; p < p_; ++p) {
       sig[p] = computeMinHash(input_set, q * p_ + p);
     }
 
-    dest.push_back(Fingerprint(std::move(sig)));
+    fingerprints.push_back(Fingerprint(sig));
   }
+
+  return fingerprints;
 }
 
 uint64_t MinHash::computeMinHash(
@@ -93,12 +80,9 @@ uint64_t MinHash::computeMinHash(
   return min;
 }
 
-void MinHash::getParameters(
-    std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& destination) const {
-
-  for (const auto& param : params_) {
-    destination.push_back(param);
-  }
+const std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>&
+    MinHash::getParameters() const {
+  return params_;
 }
 
 uint64_t MinHash::getP() const {

@@ -24,7 +24,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 project(recommendify)
 enable_testing()
-set(CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++")
+#set(CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++")
+add_definitions(-std=c++11)
 include_directories(src/)
 
 # librecommendify
